@@ -1,31 +1,41 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Avatar, UserName } from '../components/Avatar';
+import { Avatar, TraditionTag } from '../components/Avatar';
 import { FollowButton } from '../components/FollowButton';
 import { SearchIcon } from '../components/Icons';
 import { PostCard } from '../components/PostCard';
 import { navigate } from '../router';
 import { useStore } from '../store';
+import { TRADITIONS } from '../types';
 import { Empty } from './Home';
 
 export function Explore({ query }: { query: string }) {
   const { state } = useStore();
   const [q, setQ] = useState(query);
+  const [tradition, setTradition] = useState('');
   useEffect(() => setQ(query), [query]);
 
   const term = query.trim().toLowerCase();
+  const present = TRADITIONS.filter((t) => Object.values(state.users).some((u) => u.tradition === t));
+
   const people = useMemo(
     () =>
-      term
-        ? Object.values(state.users).filter((u) => `${u.name} ${u.handle} ${u.bio}`.toLowerCase().includes(term.replace(/^@/, '')))
-        : [],
-    [state.users, term],
+      Object.values(state.users).filter((u) => {
+        if (tradition && u.tradition !== tradition) return false;
+        if (!term) return Boolean(tradition);
+        return `${u.name} ${u.handle} ${u.bio} ${u.tradition}`.toLowerCase().includes(term.replace(/^@/, ''));
+      }),
+    [state.users, term, tradition],
   );
   const posts = useMemo(
     () =>
       Object.values(state.posts)
-        .filter((p) => (term ? p.text.toLowerCase().includes(term) : !p.replyToId))
-        .sort((a, b) => (term ? b.createdAt.localeCompare(a.createdAt) : b.likes.length + b.reposts.length - (a.likes.length + a.reposts.length))),
-    [state.posts, term],
+        .filter((p) => {
+          if (tradition && state.users[p.authorId]?.tradition !== tradition) return false;
+          if (!term) return !p.replyToId;
+          return `${p.text} ${p.verse ?? ''}`.toLowerCase().includes(term);
+        })
+        .sort((a, b) => (term ? b.createdAt.localeCompare(a.createdAt) : b.amens.length - a.amens.length)),
+    [state.posts, state.users, term, tradition],
   );
 
   return (
@@ -39,10 +49,19 @@ export function Explore({ query }: { query: string }) {
           }}
         >
           <SearchIcon width={18} height={18} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search posts, people, #tags" aria-label="Search" autoFocus={!query} />
+          <input id="explore-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search posts, passages, people" aria-label="Search" />
         </form>
+        <div className="chips chips-scroll" role="group" aria-label="Filter by tradition">
+          <button aria-pressed={!tradition} className={!tradition ? 'on' : ''} onClick={() => setTradition('')}>
+            All traditions
+          </button>
+          {present.map((t) => (
+            <button key={t} aria-pressed={tradition === t} className={tradition === t ? 'on' : ''} onClick={() => setTradition(tradition === t ? '' : t)}>
+              {t}
+            </button>
+          ))}
+        </div>
       </div>
-      {!term && <h2 className="section-title">Popular posts</h2>}
       {people.length > 0 && (
         <section>
           <h2 className="section-title">People</h2>
@@ -50,18 +69,20 @@ export function Explore({ query }: { query: string }) {
             <div key={u.id} className="who who-row" onClick={() => navigate(`/${u.handle}`)}>
               <Avatar user={u} />
               <div className="who-text">
-                <UserName user={u} />
-                <span className="muted">@{u.handle}</span>
-                <span className="small">{u.bio}</span>
+                <span>
+                  <strong>{u.name}</strong> <TraditionTag user={u} />
+                </span>
+                <span className="muted small">@{u.handle}</span>
+                {u.bio && <span className="small">{u.bio}</span>}
               </div>
               <FollowButton userId={u.id} />
             </div>
           ))}
-          <h2 className="section-title">Posts</h2>
         </section>
       )}
+      <h2 className="section-title">{term ? 'Posts' : 'Most amens'}</h2>
       {posts.length === 0 ? (
-        <Empty title={`No results for “${query}”`} body="Try searching for something else." />
+        <Empty title={term ? `No results for “${query}”` : 'No posts yet'} body="Try another word, passage or tradition." />
       ) : (
         posts.map((p) => <PostCard key={p.id} post={p} />)
       )}

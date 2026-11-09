@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react';
 import { Avatar } from '../components/Avatar';
+import { ConfirmDialog } from '../components/Dialogs';
 import { FollowButton } from '../components/FollowButton';
-import { CalendarIcon, LinkIcon, PinIcon, VerifiedBadge } from '../components/Icons';
+import { CalendarIcon, LinkIcon, PinIcon } from '../components/Icons';
 import { Modal } from '../components/Modal';
 import { PageHeader } from '../components/PageHeader';
 import { PostCard } from '../components/PostCard';
+import { navigate } from '../router';
 import { useStore } from '../store';
-import type { User } from '../types';
+import { TRADITIONS, type Tradition, type User } from '../types';
 import { Empty, type FeedItem } from './Home';
 
-type Tab = 'posts' | 'replies' | 'likes';
+type Tab = 'posts' | 'devotions' | 'replies' | 'amens';
+const TAB_LABEL: Record<Tab, string> = { posts: 'Posts', devotions: 'Devotions', replies: 'Replies', amens: 'Amens' };
 
 export function Profile({ handle }: { handle: string }) {
   const { state, me, userByHandle } = useStore();
@@ -20,13 +23,14 @@ export function Profile({ handle }: { handle: string }) {
   const items = useMemo<FeedItem[]>(() => {
     if (!user) return [];
     const all = Object.values(state.posts).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    if (tab === 'likes') return all.filter((p) => p.likes.includes(user.id)).map((post) => ({ post, key: post.id }));
-    if (tab === 'replies') return all.filter((p) => p.authorId === user.id && p.replyToId).map((post) => ({ post, key: post.id }));
+    const plain = (list: typeof all) => list.map((post) => ({ post, key: post.id }));
+    if (tab === 'amens') return plain(all.filter((p) => p.amens.includes(user.id)));
+    if (tab === 'replies') return plain(all.filter((p) => p.authorId === user.id && p.replyToId));
+    if (tab === 'devotions') return plain(all.filter((p) => p.authorId === user.id && p.kind === 'devotion'));
     return all.flatMap((post): FeedItem[] => {
-      const out: FeedItem[] = [];
-      if (post.reposts.includes(user.id) && post.authorId !== user.id) out.push({ post, repostedBy: user.id, key: `rp-${post.id}` });
-      if (post.authorId === user.id && !post.replyToId) out.push({ post, key: post.id });
-      return out;
+      if (post.authorId === user.id && !post.replyToId) return [{ post, key: post.id }];
+      if (post.reposts.includes(user.id) && post.authorId !== user.id) return [{ post, repostedBy: user.id, key: `rp-${post.id}` }];
+      return [];
     });
   }, [state.posts, user, tab]);
 
@@ -34,24 +38,25 @@ export function Profile({ handle }: { handle: string }) {
     return (
       <>
         <PageHeader title="Profile" back />
-        <div className="banner" />
-        <Empty title="This account doesn’t exist" body="Try searching for another." />
+        <Empty title="This account doesn’t exist" body="Try searching for another member." />
       </>
     );
   }
 
-  const postCount = Object.values(state.posts).filter((p) => p.authorId === user.id).length;
+  const postCount = Object.values(state.posts).filter((p) => p.authorId === user.id && !p.replyToId).length;
   const followers = Object.values(state.users).filter((u) => u.following.includes(user.id)).length;
   const isMe = user.id === me.id;
   const followsYou = !isMe && user.following.includes(me.id);
 
   return (
     <>
-      <PageHeader title={user.name} subtitle={`${postCount} posts`} back />
-      <div className="banner" style={{ background: user.bannerColor }} />
+      <PageHeader title={user.name} subtitle={`${postCount} post${postCount === 1 ? '' : 's'}`} back />
+      <div className="banner" style={{ background: user.bannerColor }}>
+        <span className="banner-mark" aria-hidden="true" />
+      </div>
       <div className="profile-top">
         <div className="profile-avatar">
-          <Avatar user={user} size={120} />
+          <Avatar user={user} size={112} link={false} />
         </div>
         {isMe ? (
           <button className="btn btn-outline" onClick={() => setEditing(true)}>
@@ -62,11 +67,12 @@ export function Profile({ handle }: { handle: string }) {
         )}
       </div>
       <div className="profile-info">
-        <h2 className="profile-name">
-          {user.name} {user.verified && <VerifiedBadge width={20} height={20} />}
-        </h2>
-        <div className="muted">
-          @{user.handle} {followsYou && <span className="pill">Follows you</span>}
+        <h2 className="profile-name">{user.name}</h2>
+        <div className="profile-sub">
+          <span className="muted">@{user.handle}</span>
+          <span className="tradition">{user.tradition}</span>
+          {followsYou && <span className="pill">Follows you</span>}
+          {user.demo && <span className="pill">Demo account</span>}
         </div>
         {user.bio && <p>{user.bio}</p>}
         <div className="muted profile-meta">
@@ -78,8 +84,8 @@ export function Profile({ handle }: { handle: string }) {
           {user.website && (
             <span>
               <LinkIcon />{' '}
-              <a className="link" href={`https://${user.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer">
-                {user.website}
+              <a className="link" href={`https://${user.website.replace(/^https?:\/\//, '')}`} target="_blank" rel="noreferrer noopener">
+                {user.website.replace(/^https?:\/\//, '')}
               </a>
             </span>
           )}
@@ -97,14 +103,14 @@ export function Profile({ handle }: { handle: string }) {
         </div>
       </div>
       <div className="tabs" role="tablist">
-        {(['posts', 'replies', 'likes'] as Tab[]).map((t) => (
+        {(Object.keys(TAB_LABEL) as Tab[]).map((t) => (
           <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
-            <span>{t[0].toUpperCase() + t.slice(1)}</span>
+            <span>{TAB_LABEL[t]}</span>
           </button>
         ))}
       </div>
       {items.length === 0 ? (
-        <Empty title={tab === 'likes' ? 'No likes yet' : `@${user.handle} hasn’t posted ${tab === 'replies' ? 'replies' : ''} yet`} body="When they do, it’ll show up here." />
+        <Empty title={`No ${TAB_LABEL[tab].toLowerCase()} yet`} body={isMe ? 'When you share, it will show up here.' : 'When they share, it will show up here.'} />
       ) : (
         items.map((i) => <PostCard key={i.key} post={i.post} repostedBy={i.repostedBy} />)
       )}
@@ -115,16 +121,20 @@ export function Profile({ handle }: { handle: string }) {
 
 function EditProfile({ user, onClose }: { user: User; onClose: () => void }) {
   const { dispatch } = useStore();
-  const [form, setForm] = useState({ name: user.name, bio: user.bio, location: user.location ?? '', website: user.website ?? '' });
-  const field = (key: keyof typeof form, label: string, max: number, multiline = false) => (
+  const [form, setForm] = useState({ name: user.name, bio: user.bio, location: user.location ?? '', website: user.website ?? '', tradition: user.tradition });
+  const [confirmReset, setConfirmReset] = useState(false);
+  const text = (key: 'name' | 'bio' | 'location' | 'website', label: string, max: number, multiline = false) => (
     <label className="field">
       <span>
-        {label} <span className="muted small">{form[key].length}/{max}</span>
+        {label}{' '}
+        <span className="muted small">
+          {form[key].length}/{max}
+        </span>
       </span>
       {multiline ? (
-        <textarea maxLength={max} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} rows={3} />
+        <textarea id={`ep-${key}`} maxLength={max} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} rows={3} />
       ) : (
-        <input maxLength={max} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
+        <input id={`ep-${key}`} maxLength={max} value={form[key]} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
       )}
     </label>
   );
@@ -139,28 +149,40 @@ function EditProfile({ user, onClose }: { user: User; onClose: () => void }) {
           onClose();
         }}
       >
-        {field('name', 'Name', 50)}
-        {field('bio', 'Bio', 160, true)}
-        {field('location', 'Location', 30)}
-        {field('website', 'Website', 100)}
+        {text('name', 'Name', 50)}
+        <label className="field">
+          <span>Tradition</span>
+          <select id="ep-tradition" value={form.tradition} onChange={(e) => setForm({ ...form, tradition: e.target.value as Tradition })}>
+            {TRADITIONS.map((t) => (
+              <option key={t}>{t}</option>
+            ))}
+          </select>
+        </label>
+        {text('bio', 'Bio', 160, true)}
+        {text('location', 'Location', 30)}
+        {text('website', 'Website', 100)}
         <div className="edit-actions">
-          <button
-            type="button"
-            className="btn btn-outline"
-            onClick={() => {
-              if (confirm('Reset all app data to the demo content?')) {
-                dispatch({ type: 'reset' });
-                onClose();
-              }
-            }}
-          >
-            Reset demo data
+          <button type="button" className="btn btn-outline" onClick={() => setConfirmReset(true)}>
+            Reset all data
           </button>
           <button type="submit" className="btn btn-contrast" disabled={!form.name.trim()}>
             Save
           </button>
         </div>
       </form>
+      {confirmReset && (
+        <ConfirmDialog
+          title="Reset all data?"
+          body="This deletes every account and post saved in this browser and restores the sample content."
+          confirmLabel="Reset"
+          danger
+          onClose={() => setConfirmReset(false)}
+          onConfirm={() => {
+            dispatch({ type: 'reset' });
+            navigate('/signup');
+          }}
+        />
+      )}
     </Modal>
   );
 }

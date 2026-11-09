@@ -8,7 +8,7 @@ export function FollowButton({ userId }: { userId: string }) {
   const following = me.following.includes(userId);
   return (
     <button
-      className={`btn ${following ? 'btn-outline following' : 'btn-contrast'}`}
+      className={`btn btn-sm ${following ? 'btn-outline following' : 'btn-contrast'}`}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       onClick={(e) => {

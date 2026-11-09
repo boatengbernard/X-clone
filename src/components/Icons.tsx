@@ -16,8 +16,9 @@ const base = (props: P) => ({
 });
 
 export const Logo = (p: P) => (
-  <svg {...base(p)} viewBox="0 0 24 24" strokeWidth={2.6}>
-    <path d="M5 4l14 16M19 4L5 20" />
+  <svg width={14} height={20} viewBox="0 0 12 17" aria-hidden="true" {...p}>
+    <rect x="4.5" y="0" width="3" height="17" rx="1" fill="currentColor" />
+    <rect x="0" y="5" width="12" height="3" rx="1" fill="currentColor" />
   </svg>
 );
 export const HomeIcon = ({ filled, ...p }: P) => (
@@ -122,5 +123,32 @@ export const VerifiedBadge = (p: P) => (
       d="M12 1.5l2.6 1.9 3.2-.1 1 3 2.6 1.9-1 3.1 1 3.1-2.6 1.9-1 3-3.2-.1L12 22.5l-2.6-1.9-3.2.1-1-3L2.6 15.8l1-3.1-1-3.1 2.6-1.9 1-3 3.2.1z"
     />
     <path d="M8 12.2l2.7 2.7L16.3 9" fill="none" stroke="#fff" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round" />
+  </svg>
+);
+export const AmenIcon = ({ filled, ...p }: P) => (
+  <svg {...base(p)} width={18} height={18} fill={filled ? 'currentColor' : 'none'}>
+    <path d="M12 21l-1-9.5c-.2-1.6.4-4.5 1-6.5.6 2 1.2 4.9 1 6.5z" />
+    <path d="M11 11.5L7 7.5c-.8-.8-2-.8-2.6.1-.5.7-.3 1.6.3 2.2L9 14.5 9.5 21M13 11.5l4-4c.8-.8 2-.8 2.6.1.5.7.3 1.6-.3 2.2L15 14.5 14.5 21" />
+  </svg>
+);
+export const CandleIcon = ({ filled, ...p }: P) => (
+  <svg {...base(p)} width={18} height={18}>
+    <path d="M12 3c1.6 1.8 2 3 2 4a2 2 0 0 1-4 0c0-1 .4-2.2 2-4z" fill={filled ? 'currentColor' : 'none'} />
+    <rect x="8.5" y="11" width="7" height="10" rx="1" fill={filled ? 'currentColor' : 'none'} />
+  </svg>
+);
+export const FlagIcon = (p: P) => (
+  <svg {...base(p)} width={18} height={18}>
+    <path d="M5 21V4M5 4h11l-2 4 2 4H5" />
+  </svg>
+);
+export const LogoutIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4M10 17l-5-5 5-5M5 12h11" />
+  </svg>
+);
+export const PlayIcon = (p: P) => (
+  <svg {...base(p)} width={16} height={16} fill="currentColor" stroke="none">
+    <path d="M7 4.5v15l12-7.5z" />
   </svg>
 );

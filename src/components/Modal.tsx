@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
-export function Modal({ children, onClose, title }: { children: ReactNode; onClose: () => void; title?: string }) {
+export function Modal({ children, onClose, title, small }: { children: ReactNode; onClose: () => void; title?: string; small?: boolean }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
     document.addEventListener('keydown', onKey);
@@ -14,7 +14,7 @@ export function Modal({ children, onClose, title }: { children: ReactNode; onClo
 
   return createPortal(
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal" role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
+      <div className={`modal ${small ? 'modal-small' : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <button className="icon-btn" onClick={onClose} aria-label="Close">
             ✕
