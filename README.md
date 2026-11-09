@@ -71,3 +71,7 @@ src/
   components/        Layout, PostCard, Composer, VideoCard, dialogs …
   pages/             Auth, Welcome, Home, Explore, PostDetail, Profile, Notifications, Bookmarks
 ```
+
+## Landing page
+
+`site/` holds the marketing page (`selah.html`) plus `terms.html` and `privacy.html`. The published copy lives on claude.ai, and its sign-up buttons point to the app preview. The Terms and Privacy pages are plain-language drafts: have them reviewed by a lawyer and add a contact address before launch.

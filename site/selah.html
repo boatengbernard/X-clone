@@ -1,0 +1,372 @@
+<title>Selah</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: dark navy hero that opens into paper-toned sections; one bold moment (live thread filter), everything else quiet. */
+:root{
+  --bg:#f6f1e7; --bg2:#ece5d6; --card:#fffdf8; --fg:#1f2a3c; --mut:#5d6677; --line:#d9d0bd;
+  --gold:#a67c2e; --goldsoft:#e9d5a6; --navy:#1f2a3c; --onnavy:#f6f1e7; --alert:#b5473b;
+  --hero-bg:#1c2433; --hero-fg:#f6f1e7; --hero-mut:#b9b3a3; --hero-gold:#d9b26a;
+  --serif:'Newsreader',Georgia,serif; --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#141a26; --bg2:#1a2231; --card:#202a3b; --fg:#f2ede2; --mut:#a8afbd; --line:#334058;
+  --gold:#d9b26a; --goldsoft:#4a3f26; --navy:#0e131c; --onnavy:#f6f1e7; --alert:#e07a6e;
+  --hero-bg:#0f1520; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a26; --bg2:#1a2231; --card:#202a3b; --fg:#f2ede2; --mut:#a8afbd; --line:#334058;
+  --gold:#d9b26a; --goldsoft:#4a3f26; --navy:#0e131c; --onnavy:#f6f1e7; --alert:#e07a6e;
+  --hero-bg:#0f1520; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font:17px/1.6 var(--sans);padding-inline:0;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1120px;margin-inline:auto;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.02em;text-wrap:balance;margin:0}
+h2{font-size:clamp(34px,5vw,58px);line-height:1.05}
+h3{font-size:26px;line-height:1.15}
+p{margin:0}
+.eyebrow{font:500 13px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+.lede{font-size:clamp(18px,2vw,21px);color:var(--mut);max-width:58ch}
+section{padding-block:clamp(72px,10vw,132px)}
+:focus-visible{outline:3px solid var(--gold);outline-offset:3px;border-radius:6px}
+
+/* nav */
+nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--hero-bg) 88%,transparent);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08)}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--hero-bg)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px}
+.logo{font:italic 500 28px var(--serif);color:var(--hero-gold);text-decoration:none;display:flex;align-items:center;gap:10px}
+.logo i{display:block;width:12px;height:17px;position:relative}
+.logo i::before,.logo i::after{content:"";position:absolute;background:var(--hero-gold);border-radius:1px}
+.logo i::before{left:4.5px;top:0;width:3px;height:17px}.logo i::after{left:0;top:5px;width:12px;height:3px}
+nav ul{display:flex;gap:28px;list-style:none;margin:0;padding:0}
+nav ul a{font-size:15px;text-decoration:none;color:var(--hero-mut)}
+nav ul a:hover{color:var(--hero-fg)}
+.nav-cta{display:flex;align-items:center;gap:18px}
+.nav-cta .login{font-size:15px;color:var(--hero-mut);text-decoration:none}
+.nav-cta .login:hover{color:var(--hero-fg)}
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 16px/1 var(--sans);padding:16px 26px;border-radius:999px;border:0;cursor:pointer;text-decoration:none;transition:transform .2s,box-shadow .2s,background .2s}
+.btn-gold{background:var(--hero-gold);color:#1c2433}
+.btn-gold:hover{transform:translateY(-2px);box-shadow:0 12px 30px -8px rgba(217,178,106,.6)}
+.btn-ghost{background:transparent;color:var(--hero-fg);border:1px solid rgba(246,241,231,.3)}
+.btn-ghost:hover{border-color:var(--hero-gold);color:var(--hero-gold)}
+.btn-navy{background:var(--navy);color:var(--onnavy)}
+@media (max-width:760px){nav ul{display:none}.nav-cta .login{display:none}}
+
+/* hero */
+.hero{background:var(--hero-bg);color:var(--hero-fg);position:relative;overflow:hidden;padding-block:clamp(56px,8vw,110px) clamp(64px,8vw,120px)}
+.hero .glow{position:absolute;width:760px;height:760px;border-radius:50%;background:radial-gradient(circle,rgba(217,178,106,.22),transparent 62%);left:var(--mx,70%);top:var(--my,30%);transform:translate(-50%,-50%);pointer-events:none;transition:left .6s ease-out,top .6s ease-out}
+.hero .grid{display:grid;grid-template-columns:1.15fr .85fr;gap:clamp(32px,6vw,90px);align-items:center;position:relative}
+.hero h1{font-size:clamp(46px,7.4vw,96px);line-height:.98;letter-spacing:-.035em}
+.hero h1 em{font-style:italic;color:var(--hero-gold)}
+.hero .lede{color:var(--hero-mut);margin-top:26px}
+.cta-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:38px}
+.proof{display:flex;flex-wrap:wrap;gap:10px 22px;margin-top:34px;color:var(--hero-mut);font-size:14px}
+.proof span{display:flex;align-items:center;gap:8px}
+.proof span::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--hero-gold)}
+@media (max-width:900px){.hero .grid{grid-template-columns:1fr}}
+
+/* phone */
+.phone{width:min(100%,330px);margin-inline:auto;background:#0b0f17;border-radius:46px;padding:9px;box-shadow:0 50px 100px -30px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.08);transform:rotate(2.2deg)}
+.screen{background:#f6f1e7;border-radius:38px;padding:22px 16px 18px;min-height:560px;color:#1f2a3c;font-size:14px}
+.screen .tabs{display:flex;gap:14px;font-size:12px;color:#6b7280;border-bottom:1px solid #dcd3bf;padding-bottom:8px}
+.screen .tabs b{color:#1f2a3c;border-bottom:2px solid #b8893a;padding-bottom:7px}
+.dev{background:#fffdf8;border:1px solid #e4dccb;border-radius:18px;padding:14px;margin-top:14px}
+.dev .welcome{background:#f2e9da;border-radius:12px;padding:12px;font-size:13px;line-height:1.45}
+.vchips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.vchips span{border:1px solid #dcd3bf;border-radius:999px;padding:4px 10px;font-size:11.5px;background:#fffdf8;transition:all .3s}
+.vchips span.on{background:#1f2a3c;color:#f6f1e7;border-color:#1f2a3c}
+.dev .field{border:1px solid #dcd3bf;border-radius:11px;padding:10px 12px;margin-top:10px;min-height:42px;font-size:13px;line-height:1.45}
+.dev .field.ta{min-height:92px;border-color:#1f2a3c}
+.dev .go{display:inline-block;background:#1f2a3c;color:#f6f1e7;border-radius:999px;padding:9px 16px;font-weight:600;font-size:12.5px;margin-top:10px;float:right;transition:transform .3s}
+.dev .go.pulse{transform:scale(1.08)}
+.caret::after{content:"";display:inline-block;width:2px;height:1em;background:#1f2a3c;margin-left:1px;vertical-align:-2px;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+.mini{margin-top:16px;display:flex;gap:10px;font-size:12.5px;line-height:1.4}
+.av{flex:none;width:34px;height:34px;border-radius:50%;background:#eadfc8;display:grid;place-items:center;font-weight:600;font-size:12px}
+.mini small{display:block;color:#7a6b44;font-style:italic;margin-top:3px}
+
+/* contrast */
+.compare{background:var(--bg2)}
+.seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:5px;margin-top:34px}
+.seg button{font:500 15px var(--sans);border:0;background:transparent;color:var(--mut);padding:11px 22px;border-radius:999px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--navy);color:var(--onnavy)}
+.stage{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:clamp(20px,4vw,56px);align-items:start}
+.feedbox{border-radius:24px;padding:20px;min-height:380px;transition:background .4s,border-color .4s}
+.feedbox.bad{background:#2a1714;border:1px solid #5b2a24;color:#f0d5d0}
+.feedbox.good{background:var(--card);border:1px solid var(--line)}
+.fp{border-radius:14px;padding:14px 16px;margin-bottom:12px;font-size:15px;line-height:1.45}
+.bad .fp{background:rgba(190,60,48,.18);border:1px solid rgba(224,122,110,.25)}
+.bad .fp b{color:#f0a79e;display:block;font-size:13px;margin-bottom:4px}
+.bad .fp .m{color:#d9877d;font-size:12.5px;margin-top:8px;font-variant-numeric:tabular-nums}
+.good .fp{background:var(--bg);border:1px solid var(--line)}
+.good .fp b{display:block;font-size:13px;margin-bottom:4px}
+.good .why{font-style:italic;color:var(--mut);font-size:13px;margin-top:8px}
+.tag{display:inline-block;font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:1px 9px;margin-left:6px;color:var(--mut);font-weight:400}
+.points{list-style:none;padding:0;margin:0;display:grid;gap:18px}
+.points li{display:grid;grid-template-columns:28px 1fr;gap:14px}
+.points svg{width:26px;height:26px}
+.points b{font-family:var(--serif);font-size:23px;font-weight:500;display:block;line-height:1.2;margin-bottom:3px}
+.points span{color:var(--mut);font-size:16px}
+@media (max-width:860px){.stage{grid-template-columns:1fr}}
+
+/* how it works */
+.steps{display:grid;gap:clamp(60px,9vw,120px);margin-top:70px}
+.step{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,80px);align-items:center}
+.step.rev .copy{order:2}
+.step .copy p{color:var(--mut);margin-top:16px;max-width:46ch}
+.step .copy h3{font-size:clamp(30px,4vw,44px)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:22px;box-shadow:0 30px 60px -40px rgba(31,42,60,.4);min-width:0}
+@media (max-width:860px){.step{grid-template-columns:1fr}.step.rev .copy{order:0}}
+.q{font-family:var(--serif);font-size:22px;line-height:1.25}
+.q small{display:block;font:14px var(--sans);color:var(--mut);margin-bottom:8px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}
+.chips button{font:500 14px var(--sans);border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:999px;padding:8px 15px;cursor:pointer;transition:all .2s}
+.chips button:hover{border-color:var(--gold)}
+.chips button[aria-pressed="true"]{background:var(--navy);color:var(--onnavy);border-color:var(--navy)}
+.replies{display:grid;gap:12px;min-height:250px;align-content:start}
+.reply{border:1px solid var(--line);border-radius:16px;padding:14px 16px;background:var(--bg);animation:rise .35s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}}
+.reply .who{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:14px;font-weight:600}
+.reply .who span.t{font-weight:400;color:var(--mut)}
+.reply .st{font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;border-radius:999px;padding:2px 9px;border:1px solid var(--gold);color:var(--gold)}
+.reply p{margin-top:8px;font-size:15.5px;line-height:1.5}
+.src{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.src span{font:500 14px var(--sans);padding:9px 16px;border-radius:999px;background:var(--navy);color:var(--onnavy)}
+.embed{margin-top:18px;border:1px solid var(--line);border-radius:16px;padding:16px;background:var(--bg)}
+.embed .row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.embed button{font:600 14px var(--sans);border-radius:999px;padding:9px 16px;border:1px solid var(--line);background:var(--card);color:var(--fg);cursor:pointer}
+.embed button.p{background:var(--navy);color:var(--onnavy);border-color:var(--navy)}
+.embed .loaded{margin-top:14px;aspect-ratio:16/9;max-width:100%;border-radius:12px;background:linear-gradient(135deg,#1c2433,#2b3a55);display:grid;place-items:center;color:#f6f1e7;font-size:14px;text-align:center;padding:12px}
+
+/* traditions */
+.trad{background:var(--hero-bg);color:var(--hero-fg);overflow:hidden;padding-block:56px}
+.trad .lab{text-align:center;color:var(--hero-mut);font-size:15px;margin-bottom:26px}
+.belt{display:flex;gap:44px;width:max-content;animation:belt 38s linear infinite;font:italic 500 clamp(30px,4vw,48px) var(--serif);color:var(--hero-fg)}
+.belt span{opacity:.85}.belt span:nth-child(even){color:var(--hero-gold)}
+@keyframes belt{to{transform:translateX(-50%)}}
+
+/* principles */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:56px}
+.pc{border-top:2px solid var(--fg);padding-top:20px}
+.pc h3{font-size:25px}.pc p{color:var(--mut);margin-top:10px;font-size:16px}
+@media (max-width:860px){.pgrid{grid-template-columns:1fr}}
+
+/* join */
+.joinsec{background:var(--bg2)}
+.inv{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,6vw,90px);align-items:center}
+.signup-card{background:var(--navy);color:var(--onnavy);border-radius:30px;padding:clamp(28px,4vw,46px);box-shadow:0 40px 80px -30px rgba(31,42,60,.55);transform:rotate(-1.6deg);transition:transform .4s}
+.signup-card:hover{transform:rotate(0)}
+.signup-card .l{font-size:13px;letter-spacing:.22em;color:#c9b98f;font-weight:500}
+.signup-card ol{list-style:none;margin:24px 0 0;padding:0;display:grid;gap:18px;counter-reset:s}
+.signup-card li{display:grid;grid-template-columns:38px 1fr;gap:14px;align-items:start;counter-increment:s}
+.signup-card li::before{content:counter(s);width:38px;height:38px;border-radius:50%;border:1px solid rgba(217,178,106,.55);color:#d9b26a;display:grid;place-items:center;font:500 18px var(--serif)}
+.signup-card li b{display:block;font:500 22px/1.2 var(--serif)}
+.signup-card li span{color:#c9b98f;font-size:15px}
+.signup-card .btn{margin-top:28px}
+.facts{list-style:none;padding:0;margin:28px 0 0;display:grid;gap:12px}
+.facts li{display:flex;gap:12px;color:var(--mut)}
+.facts li::before{content:"";flex:none;width:8px;height:8px;border-radius:50%;background:var(--gold);margin-top:10px}
+@media (max-width:860px){.inv{grid-template-columns:1fr}}
+
+/* faq */
+.faq{max-width:780px;margin-top:40px}
+details{border-bottom:1px solid var(--line);padding:22px 0}
+summary{cursor:pointer;font:500 24px/1.25 var(--serif);list-style:none;display:flex;justify-content:space-between;gap:20px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";font:400 30px/1 var(--sans);color:var(--gold);transition:transform .25s}
+details[open] summary::after{transform:rotate(45deg)}
+details p{color:var(--mut);margin-top:12px;max-width:62ch}
+
+/* final cta */
+.final{background:var(--hero-bg);color:var(--hero-fg);text-align:center;position:relative;overflow:hidden}
+.final h2{font-size:clamp(44px,8vw,104px);line-height:.98}
+.final h2 em{color:var(--hero-gold)}
+.final .lede{color:var(--hero-mut);margin:24px auto 0}
+.cross{width:34px;height:48px;position:relative;margin:0 auto 30px}
+.cross::before,.cross::after{content:"";position:absolute;background:var(--hero-gold);border-radius:2px}
+.cross::before{left:14px;top:0;width:6px;height:48px}.cross::after{left:0;top:15px;width:34px;height:6px}
+.final .cta-row{justify-content:center}
+.fine{font-size:14px;color:var(--hero-mut);margin-top:22px}
+.fine a{color:var(--hero-gold)}
+footer{background:var(--hero-bg);color:var(--hero-mut);padding-block:34px 44px;font-size:14px;border-top:1px solid rgba(255,255,255,.08)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:14px 30px;justify-content:space-between;align-items:center}
+footer a{text-decoration:none}footer a:hover{color:var(--hero-fg)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}html{scroll-behavior:auto}}
+</style>
+
+<nav><div class="wrap">
+  <a class="logo" href="#top"><i></i>Selah</a>
+  <ul><li><a href="#difference">The difference</a></li><li><a href="#how">How it works</a></li><li><a href="#join">Join</a></li><li><a href="#faq">Questions</a></li></ul>
+  <div class="nav-cta"><a class="login" href="https://claude.ai/artifact/SN6XmBZ5b8QihMXSbZ2ynf" target="_blank" rel="noopener">Log in</a><a class="btn btn-gold" href="https://claude.ai/artifact/SN6XmBZ5b8QihMXSbZ2ynf" target="_blank" rel="noopener" style="padding:12px 20px;font-size:15px">Sign up free</a></div>
+</div></nav>
+
+<header class="hero" id="top">
+  <div class="glow" id="glow"></div>
+  <div class="wrap grid">
+    <div>
+      <div class="eyebrow" style="color:var(--hero-gold)">A social network for the faithful and the honestly curious</div>
+      <h1 style="margin-top:22px">Your feed should not <em>water down</em> your faith.</h1>
+      <p class="lede">Selah is a calm place to share Scripture, sermons and hard questions with believers from every tradition. No ads. No outrage ranking. Every post tells you why you are seeing it.</p>
+      <div class="cta-row"><a class="btn btn-gold" href="https://claude.ai/artifact/SN6XmBZ5b8QihMXSbZ2ynf" target="_blank" rel="noopener">Create your free account →</a><a class="btn btn-ghost" href="#how">See how it works</a></div>
+      <div class="proof"><span>Free to join</span><span>No ads</span><span>Open source</span><span>Web and mobile</span></div>
+    </div>
+    <div class="phone" aria-label="Selah devotion screen, animated">
+      <div class="screen">
+        <div class="tabs"><b>Gathered</b><span>Perspectives</span><span>Following</span><span>Latest</span></div>
+        <div class="dev">
+          <div class="welcome"><b>Welcome.</b> Begin with a devotion: choose a Bible verse and share how it is speaking to you.
+            <div class="vchips" id="vchips"><span>Psalm 23:1-3</span><span>John 3:16</span><span>Philippians 4:6-7</span><span>Romans 8:28</span><span>Proverbs 3:5-6</span><span>Isaiah 41:10</span></div></div>
+          <div class="field" id="vf"></div>
+          <div class="field ta" id="tf"></div>
+          <span class="go" id="go">Share devotion</span><div style="clear:both"></div>
+        </div>
+        <div class="mini"><div class="av">NP</div><div><b>Nikolai</b> · Orthodox<br>Let my prayer be set before you as incense.<small>Why you see this: a view from another tradition</small></div></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="compare" id="difference"><div class="wrap">
+  <div class="eyebrow">The difference</div>
+  <h2 style="margin-top:16px;max-width:16ch">Built to keep you well, not hooked.</h2>
+  <p class="lede" style="margin-top:20px">Most feeds earn money by keeping you angry. Selah has nothing to sell, so it can be built for something else. Flip the switch.</p>
+  <div class="seg" role="group" aria-label="Compare feeds"><button id="b-bad" aria-pressed="false">A typical feed</button><button id="b-good" aria-pressed="true">Selah</button></div>
+  <div class="stage">
+    <div class="feedbox good" id="fb" aria-live="polite"></div>
+    <ul class="points">
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M6 6l12 12"/></svg><div><b>No ads, no selling attention</b><span>There is no advertiser to please and no engagement target to hit.</span></div></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><path d="M4 7h16M4 12h10M4 17h6"/></svg><div><b>Ranking you can read</b><span>Recency, devotion posts, and conversations where several traditions are talking. Each post shows its reason.</span></div></li>
+      <li><svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><path d="M12 3v18M3 12h18"/></svg><div><b>Disagreement is surfaced, not buried</b><span>Conflict becomes a conversation with several angles, labeled as agree, nuance, differ or question.</span></div></li>
+    </ul>
+  </div>
+</div></section>
+
+<section id="how"><div class="wrap">
+  <div class="eyebrow">How it works</div>
+  <h2 style="margin-top:16px;max-width:18ch">Three habits that change the feel of a feed.</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="copy"><div class="eyebrow">First</div><h3 style="margin-top:12px">Every member begins with a verse.</h3><p>Your first post is a devotion: pick a passage and say how it is speaking to you. It sets the culture before anyone scrolls, and it keeps the room honest about why we are here.</p></div>
+      <div class="panel"><div class="q"><small>Devotion · Isaiah 41:10</small>“Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.”</div>
+        <div class="chips" style="margin-bottom:0"><button style="cursor:default">🙏 Amen 12</button><button style="cursor:default">Praying 4</button></div>
+        <p style="font-size:13px;color:var(--mut);margin-top:12px">Example post</p></div>
+    </div>
+    <div class="step rev">
+      <div class="copy"><div class="eyebrow">Second</div><h3 style="margin-top:12px">Sermons from anywhere, played only on your tap.</h3><p>Paste a link from YouTube, Instagram, X, Snapchat or TikTok. Nothing loads or tracks you until you press play, so your feed stays quick and quiet.</p></div>
+      <div class="panel"><div class="src"><span>YouTube</span><span>Instagram</span><span>X</span><span>Snapchat</span><span>TikTok</span></div>
+        <div class="embed"><b>Forty minutes on the prodigal son</b><div style="color:var(--mut);font-size:14px;margin-top:4px">youtube.com · shared by @daniel</div>
+          <div class="row"><button class="p" id="play">▶ Play here</button><button type="button">Open on YouTube ↗</button></div><div id="loaded"></div></div>
+        <p style="font-size:13px;color:var(--mut);margin-top:12px">Interactive example</p></div>
+    </div>
+    <div class="step">
+      <div class="copy"><div class="eyebrow">Third</div><h3 style="margin-top:12px">Disagree well, with every tradition in the room.</h3><p>A hard question gets answers from Catholics, Orthodox, Baptists, Pentecostals and honest skeptics, side by side. Filter to hear one voice at a time. Try it on the right.</p></div>
+      <div class="panel"><div class="q"><small>Question from a seeker · 6 replies</small>Is baptism something God does to us, or something we do for God?</div>
+        <div class="chips" id="tchips" role="group" aria-label="Filter replies by tradition"></div>
+        <div class="replies" id="replies" aria-live="polite"></div>
+        <p style="font-size:13px;color:var(--mut);margin-top:14px">Example conversation</p></div>
+    </div>
+  </div>
+</div></section>
+
+<div class="trad" aria-label="Traditions welcome">
+  <div class="lab">Choose how you identify. Everyone is welcome.</div>
+  <div class="belt" id="belt"></div>
+</div>
+
+<section><div class="wrap">
+  <div class="eyebrow">What we will not do</div>
+  <h2 style="margin-top:16px;max-width:15ch">A short list of promises.</h2>
+  <div class="pgrid">
+    <div class="pc"><h3>No ads, ever</h3><p>Selah is not built to sell your attention. Nothing on the page is paid to be there.</p></div>
+    <div class="pc"><h3>No hidden ranking</h3><p>The formula is public, the code is open source, and each post explains itself.</p></div>
+    <div class="pc"><h3>Open to everyone</h3><p>Anyone can join in about a minute. Every member starts with a devotion, so the tone is set by faith, not by noise.</p></div>
+    <div class="pc"><h3>Respect is enforced</h3><p>Mocking and abuse are reported, reviewed and removed. Differences of belief are not.</p></div>
+    <div class="pc"><h3>Your photo, your control</h3><p>Pictures are resized on your device and stripped of location data before upload.</p></div>
+    <div class="pc"><h3>Plain terms</h3><p>Short <a href="terms.html" style="color:var(--gold)">terms</a> and a readable <a href="privacy.html" style="color:var(--gold)">privacy policy</a>, written for people and not for lawyers only.</p></div>
+  </div>
+</div></section>
+
+<section class="joinsec" id="join"><div class="wrap inv">
+  <div>
+    <div class="eyebrow">Join in a minute</div>
+    <h2 style="margin-top:16px">Open to everyone. Kind by design.</h2>
+    <p class="lede" style="margin-top:20px">No invite code and no waiting list. Sign up like you would anywhere else, and Selah keeps the conversation gentle in other ways.</p>
+    <ul class="facts"><li>Your first post is a devotion, which sets the tone from day one.</li><li>Replies are labeled agree, nuance, differ or question, so disagreement stays a conversation.</li><li>Mocking and abuse are reported, reviewed and removed.</li></ul>
+  </div>
+  <div class="signup-card">
+    <div class="l">GETTING STARTED</div>
+    <ol>
+      <li><div><b>Create your account</b><span>Name, username, email and a password.</span></div></li>
+      <li><div><b>Choose how you identify</b><span>From Catholic and Orthodox to Seeker or Guest.</span></div></li>
+      <li><div><b>Share your first devotion</b><span>Pick a verse and say how it is speaking to you.</span></div></li>
+    </ol>
+    <a class="btn btn-gold" href="https://claude.ai/artifact/SN6XmBZ5b8QihMXSbZ2ynf" target="_blank" rel="noopener">Create my account →</a>
+  </div>
+</div></section>
+
+<section id="faq"><div class="wrap">
+  <div class="eyebrow">Questions</div>
+  <h2 style="margin-top:16px">Asked before you do.</h2>
+  <div class="faq">
+    <details open><summary>How do I join?</summary><p>Anyone can sign up. Create an account with your name, a username, your email and a password, choose how you identify, then share your first devotion. There is no invite code or waiting list.</p></details>
+    <details><summary>Is Selah only for Christians?</summary><p>It is a Christian space, and honest seekers are welcome. Members choose how they identify when they join, from Catholic and Orthodox to Reformed, Baptist, Pentecostal, Evangelical, Seeker, or a guest outside the faith.</p></details>
+    <details><summary>How does Selah handle conflict?</summary><p>Posts where several traditions are talking get surfaced with replies labeled agree, nuance, differ or question. Mocking and abuse can be reported to moderators and are removed.</p></details>
+    <details><summary>Which videos can I share?</summary><p>Links from YouTube, Instagram, X, Snapchat and TikTok. They load only when you tap play.</p></details>
+    <details><summary>Is it really open source?</summary><p>Yes. The web app, mobile app and API are open source, so anyone can read exactly how the feed is ranked.</p></details>
+    <details><summary>What does it cost?</summary><p>Joining is free. There are no ads and no attention to sell. Running costs and any future plans will be explained openly before they affect you.</p></details>
+  </div>
+</div></section>
+
+<section class="final" id="signup">
+  <div class="wrap">
+    <div class="cross" aria-hidden="true"></div>
+    <h2>Come as <em>you are.</em></h2>
+    <p class="lede">Create your free account and share your first devotion today.</p>
+    <div class="cta-row" style="margin-top:38px"><a class="btn btn-gold" href="https://claude.ai/artifact/SN6XmBZ5b8QihMXSbZ2ynf" target="_blank" rel="noopener">Sign up free →</a><a class="btn btn-ghost" href="https://claude.ai/artifact/SN6XmBZ5b8QihMXSbZ2ynf" target="_blank" rel="noopener">Log in</a></div>
+    <p class="fine">By signing up you agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>. No spam. No selling your details.</p>
+  </div>
+</section>
+<footer><div class="wrap"><a class="logo" href="#top" style="font-size:22px"><i></i>Selah</a><span>Built in faith. Open source.</span><span><a href="terms.html">Terms</a> &nbsp;·&nbsp; <a href="privacy.html">Privacy</a></span></div></footer>
+
+<script>
+const $=s=>document.querySelector(s);const reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+// hero glow follows pointer
+const hero=$('.hero');hero.addEventListener('pointermove',e=>{const r=hero.getBoundingClientRect();hero.style.setProperty('--mx',(e.clientX-r.left)+'px');hero.style.setProperty('--my',(e.clientY-r.top)+'px')});
+// devotion typing loop
+const text='Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.';
+const chips=[...document.querySelectorAll('#vchips span')];const vf=$('#vf'),tf=$('#tf'),go=$('#go');
+function still(){chips[5].classList.add('on');vf.textContent='Isaiah 41:10';tf.textContent=text}
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+async function loop(){while(true){chips.forEach(c=>c.classList.remove('on'));vf.textContent='';tf.textContent='';tf.classList.remove('caret');go.classList.remove('pulse');await sleep(1400);
+ chips[5].classList.add('on');vf.textContent='Isaiah 41:10';await sleep(700);tf.classList.add('caret');
+ for(let i=1;i<=text.length;i++){tf.textContent=text.slice(0,i);await sleep(34)}tf.classList.remove('caret');await sleep(500);go.classList.add('pulse');await sleep(2600)}}
+reduce?still():loop();
+// compare
+const fb=$('#fb');const bad=[['@rage_farm','You will NOT believe what they just said about…',48201],['@ratio_king','Ratio. Absolutely destroyed. Watch the replies.',9120],['Sponsored','Get 70% off before midnight',0]];
+const good=[['Sam Whitaker','Is baptism something God does to us, or something we do for God?','Seeker','7 traditions are discussing this'],['Nikolai Petrov','Let my prayer be set before you as incense.','Orthodox','A devotion · a view from another tradition'],['Grace Okafor','Sunday’s worship set, three songs on mercy.','Pentecostal','Fresh · from someone you follow']];
+let counter;function show(k){$('#b-bad').setAttribute('aria-pressed',k==='bad');$('#b-good').setAttribute('aria-pressed',k==='good');fb.className='feedbox '+k;clearInterval(counter);
+ if(k==='bad'){fb.innerHTML=bad.map(p=>`<div class="fp"><b>${p[0]}</b>${p[1]}<div class="m">${p[2]?'▲ <span class="n" data-v="'+p[2]+'">'+p[2].toLocaleString('en-US')+'</span> angry reactions':'Sponsored'}</div></div>`).join('');
+  counter=setInterval(()=>{document.querySelectorAll('.n').forEach(n=>{const v=+n.dataset.v+Math.floor(Math.random()*37);n.dataset.v=v;n.textContent=v.toLocaleString('en-US')})},120)}
+ else fb.innerHTML=good.map(p=>`<div class="fp"><b>${p[0]}<span class="tag">${p[2]}</span></b>${p[1]}<div class="why">Why you see this: ${p[3]}</div></div>`).join('')}
+$('#b-bad').onclick=()=>show('bad');$('#b-good').onclick=()=>show('good');show('good');
+// sermon tap-to-play
+$('#play').onclick=()=>{$('#loaded').innerHTML='<div class="loaded">The video loads here only after you tap play.<br>No tracking before that moment.</div>';$('#play').textContent='Playing…'};
+// perspectives
+const R=[
+ ['Catholic','Maria Lopez','Baptism is God’s action. It is a sacrament, and grace is truly given through the water and the Word.','nuance'],
+ ['Orthodox','Nikolai Petrov','Both. God acts, and we respond in a life of repentance. Many of us were baptized as infants and grow into it.','agree'],
+ ['Baptist','Daniel Cho','I would gently differ. In Acts, belief comes first and baptism follows as the believer’s public answer.','differ'],
+ ['Pentecostal','Grace Okafor','For me it was both an obedience and a moment God met me. Could the two be held together?','question'],
+ ['Reformed','Kofi Mensah','A sign and seal of God’s promise. We baptize households, trusting him to keep what he pledged.','nuance'],
+ ['Seeker','Sam Whitaker','Thank you all. This is the first time I have seen believers disagree without a fight.','agree']];
+const T=['Everyone',...R.map(r=>r[0])];let cur='Everyone';
+function paint(){ $('#tchips').innerHTML=T.map(t=>`<button type="button" aria-pressed="${t===cur}" data-t="${t}">${t}${t==='Everyone'?' ('+R.length+')':''}</button>`).join('');
+ $('#replies').innerHTML=R.filter(r=>cur==='Everyone'||r[0]===cur).map(r=>`<div class="reply"><div class="who">${r[1]}<span class="t">${r[0]}</span><span class="st">${{agree:'Agree',nuance:'Adding nuance',differ:'Respectfully differ',question:'Question'}[r[3]]}</span></div><p>${r[2]}</p></div>`).join('');
+ document.querySelectorAll('#tchips button').forEach(b=>b.onclick=()=>{cur=b.dataset.t;paint()})}
+paint();
+// belt
+const names=['Catholic','Orthodox','Presbyterian','Baptist','Pentecostal','Evangelical','Reformed','Seeker','Guest, outside the faith'];
+$('#belt').innerHTML=[...names,...names].map(n=>`<span>${n}</span>`).join('');
+</script>
