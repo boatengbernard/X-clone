@@ -1,3 +1,5 @@
+import type { CircleData } from './circles/types.ts';
+
 export const TRADITIONS = [
   'Catholic',
   'Orthodox',
@@ -51,6 +53,10 @@ export interface User {
   bannerColor: string;
   following: string[]; // user ids
   demo?: boolean;
+  /** Finished a Reading Circles plan and offered to guide new circles. */
+  canGuide?: boolean;
+  /** Reading Circles plan ids this member has finished. */
+  finishedPlans?: string[];
 }
 
 export interface Post {
@@ -87,7 +93,7 @@ export interface Report {
 
 export type ThemeChoice = 'system' | 'light' | 'dark';
 
-export interface AppState {
+export interface AppState extends CircleData {
   version: 1;
   currentUserId: string | null;
   users: Record<string, User>;

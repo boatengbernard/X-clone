@@ -1,6 +1,7 @@
 import { Layout } from './components/Layout';
 import { Auth } from './pages/Auth';
 import { Bookmarks } from './pages/Bookmarks';
+import { Circles } from './pages/Circles';
 import { Explore } from './pages/Explore';
 import { Home } from './pages/Home';
 import { Notifications } from './pages/Notifications';
@@ -34,6 +35,10 @@ export default function App() {
     case 'notifications':
       page = <Notifications />;
       active = 'notifications';
+      break;
+    case 'circles':
+      page = <Circles />;
+      active = 'circles';
       break;
     case 'bookmarks':
       page = <Bookmarks />;

@@ -1,9 +1,11 @@
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
+import { suggestsCircles } from '../circles/safety';
 import { Composer } from '../components/Composer';
 import { PostCard } from '../components/PostCard';
 import { useStore } from '../store';
 import type { Post } from '../types';
 import { gatheredScore, traditionsInReplies } from '../utils';
+import { readingReminder } from './circles/shared';
 
 export interface FeedItem {
   post: Post;
@@ -20,7 +22,7 @@ const TABS: { key: Tab; label: string; hint: string }[] = [
 ];
 
 export function Home() {
-  const { state, me, repliesTo, hasDevotion } = useStore();
+  const { state, me, repliesTo, hasDevotion, myCircle } = useStore();
   const [tab, setTab] = useState<Tab>('gathered');
 
   const feed = useMemo<FeedItem[]>(() => {
@@ -55,6 +57,9 @@ export function Home() {
   }, [state.posts, state.users, me, tab]);
 
   const needsDevotion = !hasDevotion(me.id);
+  const reminder = readingReminder(me.id, myCircle);
+  // Invite people who aren't in a circle, under the first post about struggling to read Scripture.
+  const struggleId = myCircle ? undefined : feed.find((i) => suggestsCircles(i.post.text))?.post.id;
   const current = TABS.find((t) => t.key === tab)!;
 
   return (
@@ -68,6 +73,11 @@ export function Home() {
           ))}
         </div>
       </div>
+      {reminder && (
+        <a className="circle-reminder" href="#/circles">
+          <b>Today's reading is ready.</b> {reminder} · Open circle →
+        </a>
+      )}
       {needsDevotion ? (
         <div className="devotion-prompt">
           <p className="eyebrow">Begin with a verse</p>
@@ -86,7 +96,19 @@ export function Home() {
           body={tab === 'following' ? 'Follow members from Explore to fill this timeline.' : 'When conversations start, they will show up here.'}
         />
       ) : (
-        feed.map((item) => <PostCard key={item.key} post={item.post} repostedBy={item.repostedBy} showWhy />)
+        feed.map((item) => (
+          <Fragment key={item.key}>
+            <PostCard post={item.post} repostedBy={item.repostedBy} showWhy />
+            {item.post.id === struggleId && !item.repostedBy && (
+              <aside className="circle-suggest">
+                <span className="eyebrow">Reading Circles</span>
+                <h3>You don't have to do this alone</h3>
+                <p>Read a few minutes a day with 6–8 people on the same plan. Miss a day and your circle welcomes you back. Progress never resets.</p>
+                <a className="btn btn-primary btn-sm" href="#/circles">See Reading Circles</a>
+              </aside>
+            )}
+          </Fragment>
+        ))
       )}
     </>
   );

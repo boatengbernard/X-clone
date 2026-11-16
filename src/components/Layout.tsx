@@ -1,11 +1,14 @@
 import { useMemo, useState, type ReactNode } from 'react';
+import { localDate } from '../circles/dates';
+import { planById } from '../circles/plans';
+import { nextDay, readOn } from '../circles/progress';
 import { navigate } from '../router';
 import { useStore } from '../store';
 import type { ThemeChoice } from '../types';
 import { Avatar, TraditionTag } from './Avatar';
 import { Composer } from './Composer';
 import { FollowButton } from './FollowButton';
-import { BellIcon, BookmarkIcon, HomeIcon, Logo, LogoutIcon, MoonIcon, SearchIcon, SunIcon, UserIcon } from './Icons';
+import { BellIcon, BookmarkIcon, CirclesIcon, HomeIcon, Logo, LogoutIcon, MoonIcon, SearchIcon, SunIcon, UserIcon } from './Icons';
 import { Modal } from './Modal';
 
 export function Wordmark() {
@@ -29,6 +32,7 @@ export function Layout({ children, active }: { children: ReactNode; active: stri
   const nav = [
     { key: 'home', label: 'Home', href: '#/home', Icon: HomeIcon },
     { key: 'explore', label: 'Explore', href: '#/explore', Icon: SearchIcon },
+    { key: 'circles', label: 'Circles', href: '#/circles', Icon: CirclesIcon },
     { key: 'notifications', label: 'Notifications', href: '#/notifications', Icon: BellIcon, badge: unread },
     { key: 'bookmarks', label: 'Bookmarks', href: '#/bookmarks', Icon: BookmarkIcon },
     { key: 'profile', label: 'Profile', href: `#/${me.handle}`, Icon: UserIcon },
@@ -111,6 +115,41 @@ export function Layout({ children, active }: { children: ReactNode; active: stri
   );
 }
 
+function CircleCard() {
+  const { myCircle } = useStore();
+  if (!myCircle)
+    return (
+      <section className="card circle-card">
+        <h2>Reading Circles</h2>
+        <p className="small muted">Read a few minutes a day with 6–8 people on the same plan. Grace days, not broken streaks.</p>
+        <a className="btn btn-outline btn-sm" href="#/circles">Find a circle</a>
+      </section>
+    );
+  return (
+    <section className="card circle-card">
+      <h2>{myCircle.circle.name}</h2>
+      <CircleTodayLine />
+      <a className="btn btn-outline btn-sm" href="#/circles">Open circle</a>
+    </section>
+  );
+}
+
+function CircleTodayLine() {
+  const { me, myCircle } = useStore();
+  const m = myCircle?.members.find((x) => x.user.id === me.id)?.membership;
+  const plan = m && planById(m.planId);
+  if (!m || !plan) return null;
+  if (m.finishedOn) return <p className="small muted">You finished {plan.title}. Choose what to read next.</p>;
+  const day = nextDay(m.reads, plan.days.length);
+  const read = readOn(m.reads, localDate());
+  return (
+    <p className="small muted">
+      {read ? 'Done for today ✓ ' : ''}
+      {day ? `${read ? 'Next' : 'Today'}: Day ${day}, ${plan.days[day - 1].ref}` : ''} · {m.reads.length} of {plan.days.length} read
+    </p>
+  );
+}
+
 function RightRail() {
   const { state, me } = useStore();
   const [q, setQ] = useState('');
@@ -139,6 +178,8 @@ function RightRail() {
         <SearchIcon width={18} height={18} />
         <input id="rail-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search Selah" aria-label="Search Selah" />
       </form>
+
+      <CircleCard />
 
       {verses.length > 0 && (
         <section className="card">

@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useReducer, type ReactNode } from 'react';
+import { circleReducer, circleViewFor, isCircleAction, type CircleAction } from './circles/reducer';
+import { sampleCircles } from './circles/seed';
 import { createSeedState } from './data/seed';
 import type { AppState, Notification, NotificationKind, Post, PostKind, Stance, ThemeChoice, Tradition, User } from './types';
 
@@ -25,7 +27,8 @@ type Action =
   | { type: 'updateProfile'; patch: Partial<Pick<User, 'name' | 'bio' | 'location' | 'website' | 'tradition'>> }
   | { type: 'markNotificationsRead' }
   | { type: 'setTheme'; theme: ThemeChoice }
-  | { type: 'reset' };
+  | { type: 'reset' }
+  | CircleAction;
 
 const uid = (prefix: string) => `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
 const toggle = (list: string[], id: string) => (list.includes(id) ? list.filter((x) => x !== id) : [...list, id]);
@@ -58,6 +61,7 @@ function reducer(state: AppState, action: Action): AppState {
 
   const me = state.currentUserId;
   if (!me) return state;
+  if (isCircleAction(action)) return circleReducer(state, action, me);
 
   switch (action.type) {
     case 'logout':
@@ -133,12 +137,22 @@ function reducer(state: AppState, action: Action): AppState {
   }
 }
 
+/** Data saved before Reading Circles existed gets the sample circle and an empty history. */
+function withCircles(state: AppState): AppState {
+  if (Array.isArray(state.circles) && Array.isArray(state.memberships) && Array.isArray(state.circleMessages)) return state;
+  const sample = sampleCircles();
+  const allThere = sample.circles[0].memberIds.every((id) => state.users[id]);
+  const users = { ...state.users };
+  if (allThere && users.u_kofi) users.u_kofi = { ...users.u_kofi, canGuide: true, finishedPlans: ['john-21'] };
+  return { ...state, users, ...(allThere ? sample : { circles: [], memberships: [], circleMessages: [] }) };
+}
+
 function load(): AppState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw) as AppState;
-      if (parsed.version === 1) return parsed;
+      if (parsed.version === 1) return withCircles(parsed);
     }
   } catch {
     /* storage unavailable: fall back to the sample content */
@@ -187,6 +201,8 @@ export function useStore() {
     myBookmarks: me ? (state.bookmarks[me.id] ?? []) : [],
     reportedByMe: (postId: string) => Boolean(me && state.reports.some((r) => r.postId === postId && r.reporterId === me.id)),
     myNotifications: me ? state.notifications.filter((n) => n.targetUserId === me.id) : [],
+    /** The signed-in member's Reading Circle, or null when they are not in one. */
+    myCircle: me ? circleViewFor(state, me.id) : null,
     hasDevotion: (userId: string) => Object.values(state.posts).some((p) => p.authorId === userId && p.kind === 'devotion' && !p.replyToId),
   };
 }

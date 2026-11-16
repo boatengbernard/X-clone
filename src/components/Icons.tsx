@@ -26,6 +26,14 @@ export const HomeIcon = ({ filled, ...p }: P) => (
     <path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" />
   </svg>
 );
+export const CirclesIcon = ({ filled, ...p }: P) => (
+  <svg {...base(p)} strokeWidth={filled ? 2.4 : 1.8}>
+    <circle cx="12" cy="6.5" r="2.5" fill={filled ? 'currentColor' : 'none'} />
+    <circle cx="6" cy="16" r="2.5" fill={filled ? 'currentColor' : 'none'} />
+    <circle cx="18" cy="16" r="2.5" fill={filled ? 'currentColor' : 'none'} />
+    <path d="M9.6 8.4 7.4 13.6M14.4 8.4l2.2 5.2M8.6 17.5h6.8" />
+  </svg>
+);
 export const SearchIcon = ({ filled, ...p }: P) => (
   <svg {...base(p)} strokeWidth={filled ? 2.6 : 1.8}>
     <circle cx="11" cy="11" r="7" />

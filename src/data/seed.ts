@@ -1,3 +1,4 @@
+import { sampleCircles } from '../circles/seed';
 import type { AppState, Post, User } from '../types';
 
 const now = Date.now();
@@ -12,7 +13,7 @@ const users: User[] = [
   { ...base, id: 'u_nikolai', name: 'Nikolai Petrov', handle: 'nikolai', tradition: 'Orthodox', bio: 'Iconography student. Slow prayer, strong tea.', location: 'Sofia', joined: '2025-10-14T00:00:00.000Z', avatarColor: '#3f5b7a', bannerColor: '#162436', following: ['u_maria'] },
   { ...base, id: 'u_daniel', name: 'Daniel Cho', handle: 'daniel', tradition: 'Baptist', bio: 'Youth pastor. I share the sermons that helped me most this week.', location: 'Seoul', joined: '2025-12-01T00:00:00.000Z', avatarColor: '#2f6f5e', bannerColor: '#10302a', following: ['u_grace', 'u_kofi'] },
   { ...base, id: 'u_grace', name: 'Grace Okafor', handle: 'graceokafor', tradition: 'Pentecostal', bio: 'Worship leader in Lagos. Songs on mercy, always.', location: 'Lagos', joined: '2025-09-20T00:00:00.000Z', avatarColor: '#b5603b', bannerColor: '#4a2414', following: ['u_daniel', 'u_abena'] },
-  { ...base, id: 'u_kofi', name: 'Kofi Mensah', handle: 'kofimensah', tradition: 'Reformed', bio: 'Elder, father of three, reader of old books.', location: 'Kumasi', joined: '2025-08-08T00:00:00.000Z', avatarColor: '#5a4a8a', bannerColor: '#211a3a', following: ['u_daniel'] },
+  { ...base, id: 'u_kofi', name: 'Kofi Mensah', handle: 'kofimensah', tradition: 'Reformed', bio: 'Elder, father of three, reader of old books. Guides a Reading Circle.', location: 'Kumasi', joined: '2025-08-08T00:00:00.000Z', avatarColor: '#5a4a8a', bannerColor: '#211a3a', following: ['u_daniel'], canGuide: true, finishedPlans: ['john-21'] },
   { ...base, id: 'u_sam', name: 'Sam Whitaker', handle: 'samw', tradition: 'Seeker', bio: 'Asking honest questions. Not sure yet, and that is fine.', location: 'Leeds', joined: '2026-02-11T00:00:00.000Z', avatarColor: '#6b7280', bannerColor: '#2a2f38', following: ['u_maria', 'u_daniel'] },
 ];
 
@@ -25,6 +26,8 @@ const p = (o: Partial<Post> & Pick<Post, 'id' | 'authorId' | 'text' | 'createdAt
 });
 
 const posts: Post[] = [
+  p({ id: 'b1', authorId: 'u_sam', text: 'Honest moment: I have started a Bible reading plan six times this year and quit every one by day 4. Starting to wonder if this is for me.', createdAt: ago(8), praying: ['u_grace', 'u_daniel'] }),
+  p({ id: 'b1r1', authorId: 'u_grace', replyToId: 'b1', stance: 'agree', text: 'Same story here. Reading with a small circle is what finally worked for me. Nobody shamed me when I missed a few days.', createdAt: ago(5), amens: ['u_sam'] }),
   p({ id: 'q1', authorId: 'u_sam', kind: 'question', text: 'Is baptism something God does to us, or something we do for God?', createdAt: ago(55), amens: ['u_maria', 'u_kofi'] }),
   p({ id: 'q1r1', authorId: 'u_maria', replyToId: 'q1', stance: 'nuance', text: 'Baptism is God’s action. It is a sacrament, and grace is truly given through the water and the Word.', createdAt: ago(50), amens: ['u_nikolai'] }),
   p({ id: 'q1r2', authorId: 'u_nikolai', replyToId: 'q1', stance: 'agree', text: 'Both. God acts, and we respond in a life of repentance. Many of us were baptized as infants and grow into it.', createdAt: ago(46), amens: ['u_maria', 'u_sam'] }),
@@ -62,6 +65,7 @@ export function createSeedState(): AppState {
     lastSeenNotifications: {},
     reports: [],
     theme: 'system',
+    ...sampleCircles(),
   };
 }
 
