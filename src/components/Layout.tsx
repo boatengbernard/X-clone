@@ -102,9 +102,12 @@ export function Layout({ children, active }: { children: ReactNode; active: stri
           </a>
         ))}
       </nav>
-      <button className="fab" aria-label="Share something" onClick={() => setComposing(true)}>
-        +
-      </button>
+      {/* Circle posts are private, so the public share button stays off the Circles screens. */}
+      {active !== 'circles' && (
+        <button className="fab" aria-label="Share something" onClick={() => setComposing(true)}>
+          +
+        </button>
+      )}
 
       {composing && (
         <Modal onClose={() => setComposing(false)}>
