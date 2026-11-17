@@ -206,6 +206,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const root = document.documentElement;
     if (state.theme === 'system') root.removeAttribute('data-app-theme');
     else root.setAttribute('data-app-theme', state.theme);
+    // The phone's status bar takes its color from theme-color. Follow a manual choice;
+    // on "system", let each tag's media query pick light or dark again.
+    document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((meta) => {
+      const scheme = meta.media.includes('dark') ? 'dark' : 'light';
+      const own = scheme === 'dark' ? '#141a26' : '#f6f1e7';
+      meta.content = state.theme === 'system' ? own : state.theme === 'dark' ? '#141a26' : '#f6f1e7';
+    });
   }, [state.theme]);
 
   return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>;
