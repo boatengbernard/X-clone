@@ -181,7 +181,14 @@ function withCircles(state: AppState): AppState {
 // eslint-disable-next-line react-refresh/only-export-components
 export const devFixture: Fixture | null = (() => {
   if (!import.meta.env.DEV || typeof window === 'undefined') return null;
-  const asked = new URLSearchParams(window.location.search).get('data') ?? '';
+  let asked = new URLSearchParams(window.location.search).get('data') ?? '';
+  if (!asked) {
+    try {
+      asked = sessionStorage.getItem('selah-data') ?? ''; // set by the switch where URLs can't carry ?data=
+    } catch {
+      /* storage blocked */
+    }
+  }
   return (FIXTURES as string[]).includes(asked) ? (asked as Fixture) : null;
 })();
 

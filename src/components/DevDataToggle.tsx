@@ -12,10 +12,16 @@ const OPTIONS: { value: string; label: string }[] = [
 export function DevDataToggle() {
   const current = devFixture ?? '';
   const pick = (value: string) => {
+    try {
+      sessionStorage.setItem('selah-data', value);
+    } catch {
+      /* storage blocked: the URL still carries it */
+    }
     const url = new URL(window.location.href);
     if (value) url.searchParams.set('data', value);
     else url.searchParams.delete('data');
-    window.location.assign(url.toString());
+    if (url.search === window.location.search) window.location.reload();
+    else window.location.assign(url.toString());
   };
   return (
     <div
