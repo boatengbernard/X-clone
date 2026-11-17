@@ -1377,13 +1377,27 @@ button.action:hover > svg {
 .prefix-input span {
   color: var(--mut);
 }
-.prefix-input input {
+.prefix-input {
+  cursor: text;
+}
+.auth-field .prefix-input input {
+  flex: 1;
+  min-width: 0;
   border: 0;
+  border-radius: 0;
   padding-inline: 0;
   background: transparent;
+  -webkit-appearance: none;
+  appearance: none;
 }
-.prefix-input input:focus {
-  outline: 0;
+/* The outer box shows focus; the inner field must not draw its own ring in any browser. */
+.auth-field .prefix-input input:focus,
+.auth-field .prefix-input input:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+.auth-field .prefix-input input::-moz-focus-inner {
+  border: 0;
 }
 .has-error input,
 .has-error select,

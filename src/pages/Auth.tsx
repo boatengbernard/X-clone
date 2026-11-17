@@ -66,8 +66,8 @@ function SignUp() {
         <input id="su-name" value={form.name} onChange={set('name')} autoComplete="name" maxLength={50} />
       </Field>
       <Field id="su-handle" label="Username" error={errors.handle}>
-        <div className="prefix-input">
-          <span>@</span>
+        <div className="prefix-input" onClick={() => document.getElementById('su-handle')?.focus()}>
+          <span aria-hidden="true">@</span>
           <input id="su-handle" value={form.handle} onChange={set('handle')} autoComplete="username" maxLength={15} />
         </div>
       </Field>
