@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useReducer, type ReactNode } from
 import { circleReducer, circleViewFor, isCircleAction, type CircleAction } from './circles/reducer';
 import { sampleCircles } from './circles/seed';
 import { createSeedState } from './data/seed';
+import { createFixtureState, FIXTURES, type Fixture } from './data/worstCase';
 import type { AppState, Notification, NotificationKind, Post, PostKind, Stance, ThemeChoice, Tradition, User } from './types';
 
 const STORAGE_KEY = 'selah-state-v1';
@@ -176,7 +177,14 @@ function withCircles(state: AppState): AppState {
   return { ...state, users, ...(allThere ? sample : { circles: [], memberships: [], circleMessages: [] }) };
 }
 
+/** Dev only: ?data=worst|empty|one|huge swaps in a stress-test fixture and never saves it. */
+// eslint-disable-next-line react-refresh/only-export-components
+export const devFixture: Fixture | null = import.meta.env.DEV
+  ? ((FIXTURES as string[]).includes(new URLSearchParams(window.location.search).get('data') ?? '') ? (new URLSearchParams(window.location.search).get('data') as Fixture) : null)
+  : null;
+
 function load(): AppState {
+  if (devFixture) return createFixtureState(devFixture);
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
@@ -195,6 +203,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, load);
 
   useEffect(() => {
+    if (devFixture) return; // keep the member's real saved data untouched
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch {
