@@ -18,6 +18,8 @@
   --r-sm:10px; --r-md:18px; --r-pill:999px;
   --measure:1120px;
   --img-outline:oklch(0 0 0 / .1);
+  --bezel:#0b0f17; --on-avatar:#fffdf8;
+  --av-kofi:#5a4a8a; --av-maria:#8e3b46; --av-daniel:#2f6f5e; --av-grace:#b5603b; --av-sam:#6b7280; --av-abena:#a67c2e;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
@@ -119,7 +121,95 @@ section{padding-block:clamp(72px,10vw,128px)}
 .plans caption{text-align:left;font-size:15px;color:var(--ink-soft);padding-bottom:8px}
 .plans td{border-top:1px solid var(--rule);padding:10px 0}
 .plans td:last-child{text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
-@media (max-width:860px){.circles .wrap{grid-template-columns:minmax(0,1fr)}.circles .shot{order:2}}
+@media (max-width:860px){.circles .wrap{grid-template-columns:minmax(0,1fr)}.circles .demo{order:2}}
+
+/* circles demo: a phone on John 6 and the circle it reports to. 1em = 10 design px; 620 x 460, compact 358 x 610 */
+.demo{margin:0;min-width:0}
+.stage{container-type:inline-size}
+.canvas{position:relative;font-size:calc(100cqw / 62);aspect-ratio:62 / 50;overflow:clip;user-select:none}
+.phone{position:absolute;left:3em;top:3em;width:30em;height:62em;background:var(--bezel);border-radius:5.2em;padding:1em;box-shadow:0 3em 6em -3em color-mix(in srgb,var(--ink) 50%,transparent)}
+.screen{position:relative;height:100%;background:var(--paper);border-radius:4.2em;overflow:hidden;color:var(--ink)}
+.status{position:absolute;inset:0 0 auto;height:4.6em;display:flex;align-items:center;justify-content:space-between;padding:0 2.8em 0 3.2em;font:600 1.45em/1 var(--sans)}
+.status .batt{width:2.4em;height:1.15em;border:.12em solid var(--ink);border-radius:.35em;position:relative;font-size:1em}
+.status .batt::after{content:"";position:absolute;inset:.15em .5em .15em .15em;background:var(--ink);border-radius:.15em}
+.island{position:absolute;left:50%;top:1.1em;width:9.4em;height:2.7em;margin-left:-4.7em;background:var(--bezel);border-radius:1.4em}
+.rd{position:absolute;inset:5.6em 2.4em 0}
+.rd .back{font-size:1.4em;color:var(--ink-soft)}
+.rd .track{height:.6em;border-radius:.3em;background:var(--paper-2);margin-top:1.2em;overflow:hidden}
+.rd .track i{display:block;height:100%;width:100%;background:var(--gold);transform-origin:0 50%;transform:scaleX(.2857)}
+.rd .day{font-size:1.3em;color:var(--ink-soft);margin-top:.9em}
+.rd .ref{font:500 3.2em/1.1 var(--serif);letter-spacing:-.02em;margin-top:.15em}
+.rd .verse{font:400 1.5em/1.5 var(--serif);margin-top:.6em}
+.rd .verse sup{font:500 .62em var(--sans);color:var(--gold);margin-right:.3em}
+.bars{display:grid;gap:.9em;margin-top:1em}
+.bars i{display:block;height:.9em;border-radius:.45em;background:var(--paper-2)}
+.bars i:nth-child(2){width:88%}.bars i:nth-child(3){width:62%}
+.pane{position:absolute;left:0;right:0;top:19.4em;display:grid;gap:1.2em;transition:opacity .45s ease,transform .45s cubic-bezier(.2,0,0,1)}
+.pane-b{opacity:0;transform:translateY(2em)}
+.canvas.share .pane-a{opacity:0;transform:translateY(-1.5em)}
+.canvas.share .pane-b{opacity:1;transform:none}
+.qcard{background:var(--paper-2);border-radius:1.6em;padding:1.4em 1.6em}
+.qcard small{display:block;font-size:1.2em;color:var(--ink-soft)}
+.qcard p{font-size:1.45em;line-height:1.4;margin-top:.3em}
+.pbtn{position:relative;display:grid;place-items:center;height:3.07em;border-radius:2.3em;font:600 1.5em/1 var(--sans);transition:transform .15s ease}
+.pbtn span{grid-area:1/1;display:inline-flex;align-items:center;gap:.4em;transition:opacity .3s ease,transform .3s cubic-bezier(.2,0,0,1)}
+.pbtn .l2{opacity:0;transform:translateY(.6em)}
+.pbtn.done .l1{opacity:0;transform:translateY(-.6em)}
+.pbtn.done .l2{opacity:1;transform:none}
+.pbtn svg{width:1.1em;height:1.1em}
+.pbtn.press{transform:scale(.96)}
+.pbtn.gold{background:var(--gold);color:var(--paper)}
+.pbtn.ink{background:var(--ink);color:var(--paper);opacity:.4;transition:opacity .3s ease,transform .15s ease}
+.pbtn.ink.ready{opacity:1}
+.pane-b label{font-size:1.4em;font-weight:500}
+.field{border:.1em solid var(--ink);border-radius:1.4em;padding:1.1em 1.3em;height:7em;font-size:1em;background:var(--card)}
+.field span{font-size:1.5em;line-height:1.45}
+.field .caret{display:inline-block;width:.1em;height:1.2em;background:var(--ink);vertical-align:-.2em;margin-left:.05em;opacity:0}
+.canvas.typing .field .caret{opacity:1;animation:blink 1s steps(2) infinite}
+@keyframes blink{50%{opacity:0}}
+
+.circle{position:absolute;left:31em;top:14em;width:28em;background:var(--card);border-radius:2em;padding:1.8em 2em;box-shadow:0 0 0 .1em color-mix(in srgb,var(--ink) 8%,transparent),0 2.4em 4.8em -2em color-mix(in srgb,var(--ink) 45%,transparent);color:var(--ink)}
+.circle h4{font:500 2.1em/1.1 var(--serif);margin:0;letter-spacing:-.01em}
+.circle .sub{font-size:1.3em;color:var(--ink-soft);margin-top:.3em}
+.avs{display:flex;gap:.7em;margin-top:1.5em}
+.av{width:3.2em;height:3.2em;border-radius:50%;display:grid;place-items:center;color:var(--on-avatar);font:600 1.1em/1 var(--sans);font-size:1.1em;box-shadow:0 0 0 .2em var(--card),0 0 0 .4em var(--gold);transition:opacity .4s ease,box-shadow .4s ease}
+.av b{font-size:1.1em}
+.av.not{opacity:.35;box-shadow:0 0 0 .2em var(--card)}
+.canvas.posted .av.me{opacity:1;box-shadow:0 0 0 .2em var(--card),0 0 0 .4em var(--gold)}
+.av.me{opacity:.35;box-shadow:0 0 0 .2em var(--card)}
+.count{font-size:1.4em;margin-top:1.1em;display:flex;align-items:baseline;gap:.3em;font-variant-numeric:tabular-nums}
+.roll{display:inline-grid;height:1.4em;overflow:hidden;line-height:1.4em}
+.roll span{grid-area:1/1;transition:transform .45s cubic-bezier(.2,0,0,1),opacity .45s ease}
+.roll .n2{transform:translateY(100%);opacity:0}
+.canvas.posted .roll .n1{transform:translateY(-100%);opacity:0}
+.canvas.posted .roll .n2{transform:none;opacity:1}
+.latest{display:grid;border-top:.1em solid var(--rule);margin-top:1.4em;padding-top:1.4em}
+.line{grid-area:1/1;display:grid;grid-template-columns:2.6em minmax(0,1fr);gap:1em;align-items:start;transition:opacity .45s ease,transform .45s cubic-bezier(.2,0,0,1)}
+.line .av{width:2.6em;height:2.6em;box-shadow:none;opacity:1}
+.line .av b{font-size:.95em}
+.line p{font-size:1.4em;line-height:1.4}
+.line p b{display:block;font-size:.93em}
+.line.mine{opacity:0;transform:translateY(1.5em)}
+.canvas.posted .line.kofi{opacity:0;transform:translateY(-1.5em)}
+.canvas.posted .line.mine{opacity:1;transform:none}
+
+.touch{position:absolute;left:0;top:0;width:4em;height:4em;margin:-2em 0 0 -2em;border-radius:50%;background:color-mix(in srgb,var(--ink) 22%,transparent);box-shadow:0 0 0 .2em color-mix(in srgb,var(--card) 80%,transparent);opacity:0;pointer-events:none;transition:opacity .3s ease}
+.touch.on{opacity:1}
+.touch i{position:absolute;inset:0;border-radius:50%;transition:transform .15s ease}
+.touch.down i{transform:scale(.8)}
+.canvas.anim .touch{transition:opacity .3s ease,transform .9s cubic-bezier(.45,0,.2,1)}
+.demo figcaption{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px 16px;font-size:15px;color:var(--ink-soft);margin-top:14px}
+.replay{font:500 15px var(--sans);color:var(--ink);background:transparent;border:1px solid var(--rule);border-radius:var(--r-pill);min-height:44px;padding:0 18px;cursor:pointer;transition:transform .15s ease}
+.replay:hover{border-color:var(--ink)}
+.replay:active{transform:scale(.96)}
+.replay[hidden]{display:none}
+
+@container (max-width:480px){
+  .canvas{font-size:calc(100cqw / 35.8);aspect-ratio:35.8 / 65.5}
+  .phone{left:2.9em;top:19em}
+  .circle{left:1.6em;top:1.6em;width:32.6em}
+}
+.notrans,.notrans *{transition:none!important}
 
 /* promises */
 .promises h2{font-size:clamp(38px,5vw,62px);max-width:14ch}
@@ -225,8 +315,49 @@ details p{color:var(--ink-soft);margin-top:-8px;padding-bottom:18px;max-width:56
 </div></section>
 
 <section class="circles" id="circles"><div class="wrap">
-  <figure class="shot">
-    <div class="frame"><img src="img/circles-col.webp" width="1234" height="810" loading="lazy" alt="The Reading Circles screen: Read the Bible every day, together, with small portions, grace days, a circle that notices you, and a Find a plan button."></div>
+  <figure class="demo" aria-label="Animated example: marking day 6 of the Gospel of John as read and sharing one line with the circle">
+    <div class="stage"><div class="canvas share posted" id="cdemo" aria-hidden="true">
+      <div class="phone"><div class="screen">
+        <div class="status"><span>7:02</span><span class="batt"></span></div>
+        <div class="island"></div>
+        <div class="rd">
+          <div class="back">‹ Circle</div>
+          <div class="track"><i></i></div>
+          <div class="day">Day 6 of 21, Gospel of John</div>
+          <div class="ref">John 6</div>
+          <p class="verse"><sup>35</sup>And Jesus said unto them, I am the bread of life.</p>
+          <div class="bars"><i></i></div>
+          <div class="pane pane-a">
+            <div class="qcard"><small>One question</small><p>Jesus calls Himself the bread of life. What are you hungry for right now?</p></div>
+            <div class="pbtn gold done" data-t="read"><span class="l1">I’ve read it</span><span class="l2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Read</span></div>
+          </div>
+          <div class="pane pane-b">
+            <label>Share one line with your circle</label>
+            <div class="field" data-t="field"><span id="typed">Hungry for rest. Verse 35 met me there.</span><i class="caret"></i></div>
+            <div class="pbtn ink ready done" data-t="post"><span class="l1">Post to circle</span><span class="l2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Posted</span></div>
+          </div>
+        </div>
+      </div></div>
+      <div class="circle">
+        <h4>Morning Light</h4>
+        <div class="sub">Gospel of John, day 6</div>
+        <div class="avs">
+          <span class="av" style="background:var(--av-kofi)"><b>KM</b></span>
+          <span class="av" style="background:var(--av-maria)"><b>ML</b></span>
+          <span class="av" style="background:var(--av-daniel)"><b>DC</b></span>
+          <span class="av not" style="background:var(--av-grace)"><b>GO</b></span>
+          <span class="av" style="background:var(--av-sam)"><b>SW</b></span>
+          <span class="av me" style="background:var(--av-abena)"><b>AO</b></span>
+        </div>
+        <div class="count"><span class="roll"><span class="n1">4</span><span class="n2">5</span></span><span>of 6 read today</span></div>
+        <div class="latest">
+          <div class="line kofi"><span class="av" style="background:var(--av-kofi)"><b>KM</b></span><p><b>Kofi</b>Verse 68 stopped me. Lord, to whom shall we go?</p></div>
+          <div class="line mine"><span class="av" style="background:var(--av-abena)"><b>AO</b></span><p><b>You</b>Hungry for rest. Verse 35 met me there.</p></div>
+        </div>
+      </div>
+      <div class="touch"><i></i></div>
+    </div></div>
+    <figcaption><span>A morning in a Reading Circle, with sample members.</span><button type="button" class="replay" id="replay" hidden>Play again</button></figcaption>
   </figure>
   <div class="intro">
     <h2>Read daily with six to eight others.</h2>
@@ -282,6 +413,33 @@ document.querySelectorAll('.filter button').forEach(function(b){
     document.querySelectorAll('.replies li').forEach(function(li){li.hidden=!(t==='all'||li.dataset.t===t)});
   });
 });
+
+(function(){
+  var c=document.getElementById('cdemo'),btn=document.getElementById('replay');
+  if(!c||!window.IntersectionObserver)return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  var touch=c.querySelector('.touch'),typed=document.getElementById('typed'),line=typed.textContent;
+  var read=c.querySelector('[data-t="read"]'),post=c.querySelector('[data-t="post"]'),field=c.querySelector('[data-t="field"]');
+  var sleep=function(ms){return new Promise(function(r){setTimeout(r,ms)})};
+  function to(el,dx,dy){var a=c.getBoundingClientRect(),b=el.getBoundingClientRect();
+    touch.style.transform='translate('+(b.left-a.left+b.width*(dx||.5))+'px,'+(b.top-a.top+b.height*(dy||.5))+'px)'}
+  async function tap(el){touch.classList.add('down');el.classList.add('press');await sleep(160);touch.classList.remove('down');el.classList.remove('press')}
+  function reset(){c.classList.add('notrans');c.classList.remove('share','posted','typing','anim');read.classList.remove('done');post.classList.remove('done','ready');typed.textContent='';touch.classList.remove('on');
+    to(read,.75,2.2);void c.offsetWidth;c.classList.remove('notrans')}
+  var running=false;
+  async function play(){if(running)return;running=true;btn.hidden=true;reset();await sleep(700);
+    c.classList.add('anim');touch.classList.add('on');await sleep(200);to(read,.62,.55);await sleep(1100);
+    await tap(read);read.classList.add('done');await sleep(1100);
+    c.classList.add('share');await sleep(700);to(field,.4,.45);await sleep(1000);await tap(field);c.classList.add('typing');await sleep(300);
+    post.classList.add('ready');
+    for(var k=1;k<=line.length;k++){typed.textContent=line.slice(0,k);await sleep(/[ .]/.test(line[k-1])?110:55)}
+    c.classList.remove('typing');await sleep(500);to(post,.6,.55);await sleep(1000);await tap(post);post.classList.add('done');
+    await sleep(500);c.classList.add('posted');await sleep(900);touch.classList.remove('on');
+    await sleep(600);running=false;btn.hidden=false}
+  reset();
+  new IntersectionObserver(function(es,o){if(es[0].isIntersecting){o.disconnect();play()}},{threshold:.5}).observe(c);
+  btn.addEventListener('click',play);
+})();
 </script>
 </body>
 </html>
