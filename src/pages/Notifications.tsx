@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Avatar } from '../components/Avatar';
 import { AmenIcon, CandleIcon, RepostIcon, UserIcon } from '../components/Icons';
 import { PageHeader } from '../components/PageHeader';
@@ -10,9 +10,21 @@ import { Empty } from './Home';
 
 const VERB = { amen: 'said Amen to your post', praying: 'is praying with you', repost: 'reposted your post', follow: 'followed you', reply: 'replied' };
 
+type Tab = 'all' | 'mentions';
+
 export function Notifications() {
-  const { state, dispatch, myNotifications } = useStore();
+  const { state, dispatch, myNotifications, me } = useStore();
+  const [tab, setTab] = useState<Tab>('all');
   const items = [...myNotifications].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  // Mentions, as on X: replies to you and any post that names your @username.
+  const mentions = useMemo(() => {
+    if (!me) return [];
+    const tag = new RegExp(`(^|[^\\w])@${me.handle}(?!\\w)`, 'i');
+    return Object.values(state.posts)
+      .filter((p) => p.authorId !== me.id && ((p.replyToId && state.posts[p.replyToId]?.authorId === me.id) || tag.test(p.text)))
+      .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [state.posts, me]);
 
   useEffect(() => {
     dispatch({ type: 'markNotificationsRead' });
@@ -20,9 +32,23 @@ export function Notifications() {
 
   return (
     <>
-      <PageHeader title="Notifications" />
-      {items.length === 0 && <Empty title="Nothing here yet" body="Amens, prayers, replies and new followers will show up here." />}
-      {items.map((n) => {
+      <PageHeader title="Notifications">
+        <div className="tabs" role="tablist" aria-label="Notifications">
+          {(['all', 'mentions'] as const).map((t) => (
+            <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>
+              <span>{t === 'all' ? 'All' : 'Mentions'}</span>
+            </button>
+          ))}
+        </div>
+      </PageHeader>
+      {tab === 'mentions' &&
+        (mentions.length === 0 ? (
+          <Empty title="No mentions yet" body="When someone replies to you or mentions your @username, it will show up here." />
+        ) : (
+          mentions.map((p) => <PostCard key={p.id} post={p} />)
+        ))}
+      {tab === 'all' && items.length === 0 && <Empty title="Nothing here yet" body="Amens, prayers, replies and new followers will show up here." />}
+      {tab === 'all' && items.map((n) => {
         const actor = state.users[n.actorId];
         const post = n.postId ? state.posts[n.postId] : undefined;
         if (!actor) return null;

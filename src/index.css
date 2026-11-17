@@ -1755,3 +1755,14 @@ button.action:hover > svg {
 .rc .finished .big { font: 600 72px/1 var(--display); color: var(--honey); font-variant-numeric: tabular-nums }
 
 .rc .messages { list-style: none; margin: 0; padding: 0 }
+.show-more {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 14px 16px;
+  color: var(--gold);
+  border-bottom: 1px solid var(--line);
+}
+.show-more:hover {
+  background: var(--hover);
+}
