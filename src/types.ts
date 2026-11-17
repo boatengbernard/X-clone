@@ -57,6 +57,8 @@ export interface User {
   canGuide?: boolean;
   /** Reading Circles plan ids this member has finished. */
   finishedPlans?: string[];
+  /** bible-api.com translation id for Scripture shown to this member; King James Version when unset. */
+  bible?: string;
 }
 
 export interface Post {

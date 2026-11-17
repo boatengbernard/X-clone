@@ -2016,3 +2016,28 @@ a.user-name:hover {
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
+/* Bible translation picker */
+.bible-picker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--mut);
+}
+.bible-picker select {
+  flex: 1 1 200px;
+  min-width: 0;
+  max-width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--card);
+  color: var(--fg);
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 14px;
+}
+.bible-picker select:focus {
+  outline: 0;
+  border-color: var(--gold);
+}

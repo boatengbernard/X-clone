@@ -27,7 +27,7 @@ type Action =
   | { type: 'send'; postId: string; toUserIds: string[] }
   | { type: 'follow'; userId: string }
   | { type: 'report'; postId: string; reason: string }
-  | { type: 'updateProfile'; patch: Partial<Pick<User, 'name' | 'bio' | 'location' | 'website' | 'tradition'>> }
+  | { type: 'updateProfile'; patch: Partial<Pick<User, 'name' | 'bio' | 'location' | 'website' | 'tradition' | 'bible'>> }
   | { type: 'markNotificationsRead' }
   | { type: 'setTheme'; theme: ThemeChoice }
   | { type: 'reset' }

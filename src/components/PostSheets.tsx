@@ -3,6 +3,8 @@ import { loadPassage } from '../circles/passage';
 import { useStore } from '../store';
 import type { Post, User } from '../types';
 import { drawVerseCard } from '../verseCard';
+import { bibleById } from '../bible';
+import { BiblePicker } from './BiblePicker';
 import { Avatar, TraditionTag } from './Avatar';
 import { FlagIcon, ImageIcon, KeepIcon, LinkIcon, RepostIcon, SearchIcon, SendIcon, TrashIcon } from './Icons';
 import { Modal } from './Modal';
@@ -125,27 +127,33 @@ export function JournalSheet({ post, onClose, done }: { post: Post; onClose: () 
   );
 }
 
-function useVerseText(reference?: string) {
+function useVerseText(reference: string | undefined, translation: string) {
   const [text, setText] = useState<string>();
   useEffect(() => {
+    setText(undefined);
     if (!reference) return;
     let live = true;
-    loadPassage(reference)
+    loadPassage(reference, translation)
       .then((verses) => live && setText(verses.map((v) => v.text).join(' ')))
       .catch(() => undefined);
     return () => {
       live = false;
     };
-  }, [reference]);
+  }, [reference, translation]);
   return text;
 }
 
 /** A Scripture card preview, the same design as the saved image. */
-export function VerseCard({ post, author, verseText }: { post: Post; author: User; verseText?: string }) {
+export function VerseCard({ post, author, verseText, abbr }: { post: Post; author: User; verseText?: string; abbr?: string }) {
   return (
     <figure className="verse-card" aria-label="Scripture card preview">
       <span className="vc-ribbon" aria-hidden="true" />
-      {post.verse && <span className="vc-ref">{post.verse}</span>}
+      {post.verse && (
+        <span className="vc-ref">
+          {post.verse}
+          {verseText && abbr ? ` · ${abbr}` : ''}
+        </span>
+      )}
       {verseText && <blockquote className="vc-verse">“{verseText}”</blockquote>}
       <p className={verseText ? 'vc-reflection' : 'vc-reflection vc-alone'}>
         {verseText ? `${author.name.split(' ')[0]}: “${post.text}”` : post.text}
@@ -167,13 +175,14 @@ export function PassSheet({ post, onClose, done }: { post: Post; onClose: () => 
   const [view, setView] = useState<'main' | 'send'>('main');
   const [busy, setBusy] = useState(false);
   const isDevotion = post.kind === 'devotion' && !post.replyToId;
-  const verseText = useVerseText(isDevotion ? post.verse : undefined);
+  const bible = bibleById(me.bible);
+  const verseText = useVerseText(isDevotion ? post.verse : undefined, bible.id);
   const reposted = post.reposts.includes(me.id);
 
   const saveImage = async () => {
     setBusy(true);
     try {
-      const blob = await drawVerseCard({ reference: post.verse, verseText, reflection: post.text, authorName: author.name, handle: author.handle });
+      const blob = await drawVerseCard({ reference: post.verse && verseText ? `${post.verse} · ${bible.abbr}` : post.verse, verseText, reflection: post.text, authorName: author.name, handle: author.handle });
       const name = `selah-${(post.verse ?? 'devotion').toLowerCase().replace(/[^a-z0-9]+/g, '-')}.png`;
       const file = new File([blob], name, { type: 'image/png' });
       if (navigator.canShare?.({ files: [file] })) {
@@ -201,7 +210,12 @@ export function PassSheet({ post, onClose, done }: { post: Post; onClose: () => 
   return (
     <Modal onClose={onClose} title="Pass it on" small>
       <div className="dialog-body pass-body">
-        {isDevotion && <VerseCard post={post} author={author} verseText={verseText} />}
+        {isDevotion && (
+          <>
+            <VerseCard post={post} author={author} verseText={verseText} abbr={bible.abbr} />
+            <BiblePicker id="pass-bible" label="Verse translation" />
+          </>
+        )}
         <div className="sheet-list flush">
           <button className="sheet-item" onClick={() => setView('send')}>
             <SendIcon />

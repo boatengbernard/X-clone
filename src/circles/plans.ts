@@ -1,3 +1,4 @@
+import { gatewayLink } from '../bible';
 export interface PlanDay {
   /** What the reader sees, e.g. "John 3". */
   ref: string;
@@ -108,4 +109,4 @@ export const PLANS: Plan[] = [
 export const planById = (id: string) => PLANS.find((p) => p.id === id);
 
 /** A link to read the passage elsewhere when the text cannot be loaded. */
-export const passageLink = (ref: string) => `https://www.biblegateway.com/passage/?search=${encodeURIComponent(ref)}&version=KJV`;
+export const passageLink = (ref: string, translation?: string) => gatewayLink(ref, translation);
