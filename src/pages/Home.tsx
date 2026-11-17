@@ -4,7 +4,7 @@ import { Composer } from '../components/Composer';
 import { PostCard } from '../components/PostCard';
 import { useStore } from '../store';
 import type { Post } from '../types';
-import { gatheredScore, traditionsInReplies } from '../utils';
+import { formatCount, gatheredScore, traditionsInReplies } from '../utils';
 import { readingReminder } from './circles/shared';
 
 export interface FeedItem {
@@ -21,9 +21,13 @@ const TABS: { key: Tab; label: string; hint: string }[] = [
   { key: 'latest', label: 'Latest', hint: 'Everything, newest first.' },
 ];
 
+/** Posts per page. A calm feed ends; more loads only when asked. */
+const PAGE = 30;
+
 export function Home() {
   const { state, me, repliesTo, hasDevotion, myCircle } = useStore();
   const [tab, setTab] = useState<Tab>('gathered');
+  const [shown, setShown] = useState(PAGE);
 
   const feed = useMemo<FeedItem[]>(() => {
     const top = Object.values(state.posts).filter((p) => !p.replyToId);
@@ -67,7 +71,7 @@ export function Home() {
       <div className="page-header sticky">
         <div className="tabs" role="tablist">
           {TABS.map((t) => (
-            <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
+            <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'active' : ''} onClick={() => { setTab(t.key); setShown(PAGE); }}>
               <span>{t.label}</span>
             </button>
           ))}
@@ -96,7 +100,7 @@ export function Home() {
           body={tab === 'following' ? 'Follow members from Explore to fill this timeline.' : 'When conversations start, they will show up here.'}
         />
       ) : (
-        feed.map((item) => (
+        feed.slice(0, shown).map((item) => (
           <Fragment key={item.key}>
             <PostCard post={item.post} repostedBy={item.repostedBy} showWhy />
             {item.post.id === struggleId && !item.repostedBy && (
@@ -109,6 +113,11 @@ export function Home() {
             )}
           </Fragment>
         ))
+      )}
+      {feed.length > shown && (
+        <button type="button" className="show-more feed-more" onClick={() => setShown((n) => n + PAGE)}>
+          Show {Math.min(PAGE, feed.length - shown)} more of {formatCount(feed.length - shown)}
+        </button>
       )}
     </>
   );

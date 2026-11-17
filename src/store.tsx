@@ -179,9 +179,11 @@ function withCircles(state: AppState): AppState {
 
 /** Dev only: ?data=worst|empty|one|huge swaps in a stress-test fixture and never saves it. */
 // eslint-disable-next-line react-refresh/only-export-components
-export const devFixture: Fixture | null = import.meta.env.DEV
-  ? ((FIXTURES as string[]).includes(new URLSearchParams(window.location.search).get('data') ?? '') ? (new URLSearchParams(window.location.search).get('data') as Fixture) : null)
-  : null;
+export const devFixture: Fixture | null = (() => {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return null;
+  const asked = new URLSearchParams(window.location.search).get('data') ?? '';
+  return (FIXTURES as string[]).includes(asked) ? (asked as Fixture) : null;
+})();
 
 function load(): AppState {
   if (devFixture) return createFixtureState(devFixture);

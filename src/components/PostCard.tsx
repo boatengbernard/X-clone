@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { navigate } from '../router';
 import { useStore } from '../store';
 import { KIND_LABEL, STANCE_LABEL, type Post } from '../types';
-import { findVideo, fullDate, richText, timeAgo, traditionsInReplies, whyYouSee } from '../utils';
+import { findVideo, formatCount, fullDate, richText, timeAgo, traditionsInReplies, whyYouSee } from '../utils';
 import { Avatar, TraditionTag, UserName } from './Avatar';
 import { Composer } from './Composer';
 import { ConfirmDialog, ReportDialog } from './Dialogs';
@@ -109,7 +109,7 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
             </div>
           )}
 
-          <div className={`post-text ${detail ? 'post-text-lg' : ''} ${post.kind === 'devotion' || post.kind === 'question' ? 'post-text-serif' : ''}`}>
+          <div dir="auto" className={`post-text ${detail ? 'post-text-lg' : ''} ${post.kind === 'devotion' || post.kind === 'question' ? 'post-text-serif' : ''}`}>
             {richText(post.text)}
           </div>
           {video && <VideoCard video={video} />}
@@ -120,19 +120,19 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
             <button className={`pill-btn amen ${amened ? 'active' : ''}`} aria-pressed={amened} onClick={stop(() => dispatch({ type: 'amen', postId: post.id }))}>
               <AmenIcon filled={amened} />
               <span className="pill-word">Amen</span>
-              {post.amens.length > 0 && <span className="pill-count">{post.amens.length}</span>}
+              {post.amens.length > 0 && <span className="pill-count" title={post.amens.length.toLocaleString()}>{formatCount(post.amens.length)}</span>}
             </button>
             {showPraying && (
               <button className={`pill-btn praying ${praying ? 'active' : ''}`} aria-pressed={praying} onClick={stop(() => dispatch({ type: 'praying', postId: post.id }))}>
                 <CandleIcon filled={praying} />
                 <span className="pill-word">Praying</span>
-                {post.praying.length > 0 && <span className="pill-count">{post.praying.length}</span>}
+                {post.praying.length > 0 && <span className="pill-count" title={post.praying.length.toLocaleString()}>{formatCount(post.praying.length)}</span>}
               </button>
             )}
             <button className="pill-btn reply" aria-label={`Reply, ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`} onClick={stop(() => setDialog('reply'))}>
               <ReplyIcon />
               <span className="pill-word">Reply</span>
-              {replies.length > 0 && <span className="pill-count">{replies.length}</span>}
+              {replies.length > 0 && <span className="pill-count" title={replies.length.toLocaleString()}>{formatCount(replies.length)}</span>}
             </button>
             <div className="post-actions-end">
               <button className="pass-btn" onClick={stop(() => setDialog('pass'))}>

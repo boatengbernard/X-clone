@@ -237,6 +237,9 @@ p {
 }
 .tradition {
   display: inline-block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-size: 12px;
   line-height: 1;
   padding: 3px 8px;
@@ -2163,4 +2166,15 @@ p {
 }
 a.avatar:active {
   filter: brightness(0.92);
+}
+
+/* In a post header the name is how you recognise someone; the tradition tag gives way first. */
+.post-header .tradition {
+  flex-shrink: 20;
+  min-width: 3.2em;
+}
+.feed-more {
+  text-align: center;
+  font-weight: 600;
+  min-height: 48px;
 }

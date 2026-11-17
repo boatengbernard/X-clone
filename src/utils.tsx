@@ -16,11 +16,13 @@ export function fullDate(iso: string): string {
   return `${d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' })} · ${d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`;
 }
 
-const TOKEN = /(#\w+|@\w+|https?:\/\/[^\s]+)/g;
+// A # or @ only starts a tag or mention at the start of a word, so emails like name@example.com stay plain text.
+const TOKEN = /((?<![\w.+-])#\w+|(?<![\w.+-])@\w+|https?:\/\/[^\s]+)/g;
 
 /** Turns hashtags, mentions and links in post text into clickable elements. */
 export function richText(text: string): ReactNode {
-  return text.split(TOKEN).map((part, i) => {
+  // Keep a writer's paragraph breaks, but never more than one blank line in a row.
+  return text.replace(/\n\s*\n(\s*\n)+/g, '\n\n').split(TOKEN).map((part, i) => {
     if (i % 2 === 0) return <Fragment key={i}>{part}</Fragment>;
     const stop = (e: React.MouseEvent) => e.stopPropagation();
     if (part.startsWith('#'))
@@ -100,4 +102,24 @@ export function gatheredScore(post: Post, replyTraditions: number, followed: boo
   const conversationLift = 1 + 0.25 * Math.min(replyTraditions, 4);
   const followLift = followed ? 1.2 : 1;
   return recency * kindLift * conversationLift * followLift;
+}
+
+const NAME_SUFFIX = /^(jr|sr|ii|iii|iv|v)\.?$/i;
+type SegmenterCtor = new (locale?: string, opts?: { granularity: 'grapheme' }) => { segment(s: string): Iterable<{ segment: string }> };
+const Segmenter = (Intl as unknown as { Segmenter?: SegmenterCtor }).Segmenter;
+/** Whole user-visible characters, so an emoji or accented letter is never split in half. */
+const graphemes = (s: string): string[] => (Segmenter ? [...new Segmenter(undefined, { granularity: 'grapheme' }).segment(s)].map((x) => x.segment) : Array.from(s));
+
+/** Avatar initials: first letter of the first and last names, whole characters only, skipping emoji and Jr/Sr/III. */
+export function initialsOf(name: string): string {
+  const words = name.trim().split(/\s+/).filter((w) => /\p{L}/u.test(w) && !NAME_SUFFIX.test(w));
+  const first = (w: string) => graphemes(w).find((g) => /\p{L}/u.test(g)) ?? '';
+  if (words.length === 0) return graphemes(name.trim())[0] ?? '?';
+  const picked = words.length === 1 ? [words[0]] : [words[0], words[words.length - 1]];
+  return picked.map(first).join('').toLocaleUpperCase();
+}
+
+/** Reaction counts: exact with separators below 10,000 ("1,284"), short above ("10K"). */
+export function formatCount(n: number): string {
+  return n < 10_000 ? n.toLocaleString() : new Intl.NumberFormat(undefined, { notation: 'compact', maximumFractionDigits: 1 }).format(n);
 }

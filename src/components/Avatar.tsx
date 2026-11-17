@@ -1,12 +1,8 @@
 import type { User } from '../types';
+import { initialsOf } from '../utils';
 
 export function Avatar({ user, size = 40, link = true }: { user: User; size?: number; link?: boolean }) {
-  const initials = user.name
-    .split(/\s+/)
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join('')
-    .toUpperCase();
+  const initials = initialsOf(user.name);
   const style = { width: size, height: size, background: user.avatarColor, fontSize: size * 0.38 };
   if (!link)
     return (
@@ -23,12 +19,12 @@ export function Avatar({ user, size = 40, link = true }: { user: User; size?: nu
 
 export function UserName({ user }: { user: User }) {
   return (
-    <a href={`#/${user.handle}`} onClick={(e) => e.stopPropagation()} className="user-name">
+    <a href={`#/${user.handle}`} onClick={(e) => e.stopPropagation()} className="user-name" dir="auto" title={user.name}>
       {user.name}
     </a>
   );
 }
 
 export function TraditionTag({ user }: { user: User }) {
-  return <span className="tradition">{user.tradition}</span>;
+  return <span className="tradition" title={user.tradition}>{user.tradition}</span>;
 }
