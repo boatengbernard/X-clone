@@ -2,7 +2,9 @@ import type { SVGProps } from 'react';
 
 type P = SVGProps<SVGSVGElement> & { filled?: boolean };
 
-const base = (props: P) => ({
+// `filled` is read by each icon itself; never pass it through to the <svg>.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const base = ({ filled: _filled, ...props }: P) => ({
   width: 22,
   height: 22,
   viewBox: '0 0 24 24',
@@ -158,5 +160,46 @@ export const LogoutIcon = (p: P) => (
 export const PlayIcon = (p: P) => (
   <svg {...base(p)} width={16} height={16} fill="currentColor" stroke="none">
     <path d="M7 4.5v15l12-7.5z" />
+  </svg>
+);
+/** Keep: a Bible with a ribbon marker. */
+export const KeepIcon = ({ filled, ...p }: P) => (
+  <svg {...base(p)} width={18} height={18}>
+    <path d="M5 19.5V5a2 2 0 0 1 2-2h12v15H7a2 2 0 0 0-2 1.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19" />
+    <path d="M14 3v7l-1.75-1.3L10.5 10V3" fill={filled ? 'currentColor' : 'none'} />
+  </svg>
+);
+/** Pass it on: an open hand offering something forward. */
+export const PassIcon = (p: P) => (
+  <svg {...base(p)} width={18} height={18}>
+    <path d="M3 15h3c1.5 0 2.5-1.5 4-1.5h4a1.6 1.6 0 0 1 0 3.2h-3" />
+    <path d="M14 16.7l4.6-2.9a1.6 1.6 0 0 1 2 2.4l-4.8 4a4 4 0 0 1-2.6.8H3" />
+    <path d="M15 3.5l2.5 2.5L15 8.5M8 6h9.5" />
+  </svg>
+);
+export const JournalIcon = ({ filled, ...p }: P) => (
+  <svg {...base(p)}>
+    <rect x="5" y="3" width="14" height="18" rx="2" fill={filled ? 'currentColor' : 'none'} />
+    <path d="M9 3v18M12.5 8H16M12.5 12H16" stroke={filled ? 'var(--bg)' : 'currentColor'} />
+  </svg>
+);
+export const MoreIcon = (p: P) => (
+  <svg {...base(p)} width={18} height={18} fill="currentColor" stroke="none">
+    <circle cx="5" cy="12" r="1.8" />
+    <circle cx="12" cy="12" r="1.8" />
+    <circle cx="19" cy="12" r="1.8" />
+  </svg>
+);
+export const ImageIcon = (p: P) => (
+  <svg {...base(p)} width={18} height={18}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <circle cx="9" cy="10" r="2" />
+    <path d="M21 16l-5-5-9 9" />
+  </svg>
+);
+export const SendIcon = (p: P) => (
+  <svg {...base(p)} width={18} height={18}>
+    <circle cx="9" cy="8" r="4" />
+    <path d="M2 21a7 7 0 0 1 12.5-4.3M17 14v6M14 17h6" />
   </svg>
 );

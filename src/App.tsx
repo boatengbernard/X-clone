@@ -1,6 +1,6 @@
 import { Layout } from './components/Layout';
 import { Auth } from './pages/Auth';
-import { Bookmarks } from './pages/Bookmarks';
+import { Journal } from './pages/Journal';
 import { Circles } from './pages/Circles';
 import { Explore } from './pages/Explore';
 import { Home } from './pages/Home';
@@ -40,9 +40,10 @@ export default function App() {
       page = <Circles />;
       active = 'circles';
       break;
+    case 'journal':
     case 'bookmarks':
-      page = <Bookmarks />;
-      active = 'bookmarks';
+      page = <Journal />;
+      active = 'journal';
       break;
     case 'post':
       page = <PostDetail key={second} id={second ?? ''} />;

@@ -73,7 +73,7 @@ export interface Post {
   reposts: string[]; // user ids
 }
 
-export type NotificationKind = 'amen' | 'praying' | 'repost' | 'reply' | 'follow';
+export type NotificationKind = 'amen' | 'praying' | 'repost' | 'reply' | 'follow' | 'sent';
 
 export interface Notification {
   id: string;
@@ -82,6 +82,12 @@ export interface Notification {
   targetUserId: string;
   postId?: string;
   createdAt: string;
+}
+
+/** A post kept in someone's journal, with their private note. */
+export interface JournalEntry {
+  note: string;
+  savedAt: string;
 }
 
 export interface Report {
@@ -98,7 +104,9 @@ export interface AppState extends CircleData {
   currentUserId: string | null;
   users: Record<string, User>;
   posts: Record<string, Post>;
-  bookmarks: Record<string, string[]>; // user id -> post ids
+  bookmarks: Record<string, string[]>; // user id -> post ids kept in their journal
+  /** user id -> post id -> private note. Older saved data has no notes yet. */
+  journal?: Record<string, Record<string, JournalEntry>>;
   notifications: Notification[];
   lastSeenNotifications: Record<string, string>; // user id -> ISO
   reports: Report[];

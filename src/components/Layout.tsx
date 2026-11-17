@@ -8,7 +8,7 @@ import type { ThemeChoice } from '../types';
 import { Avatar, TraditionTag } from './Avatar';
 import { Composer } from './Composer';
 import { FollowButton } from './FollowButton';
-import { BellIcon, BookmarkIcon, CirclesIcon, HomeIcon, Logo, LogoutIcon, MoonIcon, SearchIcon, SunIcon, UserIcon } from './Icons';
+import { BellIcon, CirclesIcon, HomeIcon, JournalIcon, Logo, LogoutIcon, MoonIcon, SearchIcon, SunIcon, UserIcon } from './Icons';
 import { Modal } from './Modal';
 
 export function Wordmark() {
@@ -34,7 +34,7 @@ export function Layout({ children, active }: { children: ReactNode; active: stri
     { key: 'explore', label: 'Explore', href: '#/explore', Icon: SearchIcon },
     { key: 'circles', label: 'Circles', href: '#/circles', Icon: CirclesIcon },
     { key: 'notifications', label: 'Notifications', href: '#/notifications', Icon: BellIcon, badge: unread },
-    { key: 'bookmarks', label: 'Bookmarks', href: '#/bookmarks', Icon: BookmarkIcon },
+    { key: 'journal', label: 'Journal', href: '#/journal', Icon: JournalIcon },
     { key: 'profile', label: 'Profile', href: `#/${me.handle}`, Icon: UserIcon },
   ];
 
