@@ -1487,7 +1487,11 @@ button.action:hover > svg {
 }
 @media (max-width: 760px) {
   .auth {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .auth-form .btn-block {
+    white-space: normal;
+    text-align: center;
   }
   .auth-side {
     padding: 36px 20px 28px;
@@ -1525,6 +1529,22 @@ button.action:hover > svg {
   }
   .post-actions .action span {
     font-size: 12px;
+  }
+  /* Keep the whole action row on screen on narrow phones. */
+  .post-actions {
+    gap: 0;
+    margin-inline: -6px;
+    min-width: 0;
+  }
+  .post-actions .action {
+    padding-right: 4px;
+    flex-shrink: 0;
+  }
+  .post-actions .action > svg {
+    padding: 6px;
+  }
+  .post-actions .action-group {
+    flex-shrink: 0;
   }
   .bottom-nav {
     display: flex;
@@ -1599,6 +1619,12 @@ button.action:hover > svg {
   }
   .modal-backdrop:has(.modal-small) {
     align-items: flex-end;
+  }
+}
+/* Smallest phones: the icons carry the meaning, so drop the words and keep the counts. */
+@media (max-width: 359px) {
+  .post-actions .action-word {
+    display: none;
   }
 }
 @media (prefers-reduced-motion: reduce) {

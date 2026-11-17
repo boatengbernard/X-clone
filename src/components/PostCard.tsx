@@ -139,12 +139,18 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
             </button>
             <button className={`action amen ${amened ? 'active' : ''}`} aria-label="Amen" aria-pressed={amened} onClick={stop(() => dispatch({ type: 'amen', postId: post.id }))}>
               <AmenIcon filled={amened} />
-              <span>Amen{post.amens.length ? ` ${post.amens.length}` : ''}</span>
+              <span>
+                <span className="action-word">Amen</span>
+                {post.amens.length ? ` ${post.amens.length}` : ''}
+              </span>
             </button>
             {showPraying && (
               <button className={`action praying ${praying ? 'active' : ''}`} aria-label="Praying" aria-pressed={praying} onClick={stop(() => dispatch({ type: 'praying', postId: post.id }))}>
                 <CandleIcon filled={praying} />
-                <span>Praying{post.praying.length ? ` ${post.praying.length}` : ''}</span>
+                <span>
+                  <span className="action-word">Praying</span>
+                  {post.praying.length ? ` ${post.praying.length}` : ''}
+                </span>
               </button>
             )}
             <button className={`action repost ${reposted ? 'active' : ''}`} aria-label={reposted ? 'Undo repost' : 'Repost'} aria-pressed={reposted} onClick={stop(() => dispatch({ type: 'repost', postId: post.id }))}>
