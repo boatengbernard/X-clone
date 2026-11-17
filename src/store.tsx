@@ -22,9 +22,12 @@ type Action =
   | { type: 'delete'; postId: string }
   | { type: 'amen' | 'praying' | 'repost'; postId: string }
   | { type: 'bookmark'; postId: string }
+  | { type: 'keep'; postId: string; note: string }
+  | { type: 'unkeep'; postId: string }
+  | { type: 'send'; postId: string; toUserIds: string[] }
   | { type: 'follow'; userId: string }
   | { type: 'report'; postId: string; reason: string }
-  | { type: 'updateProfile'; patch: Partial<Pick<User, 'name' | 'bio' | 'location' | 'website' | 'tradition'>> }
+  | { type: 'updateProfile'; patch: Partial<Pick<User, 'name' | 'bio' | 'location' | 'website' | 'tradition' | 'bible'>> }
   | { type: 'markNotificationsRead' }
   | { type: 'setTheme'; theme: ThemeChoice }
   | { type: 'reset' }
@@ -41,7 +44,8 @@ function notify(state: AppState, kind: NotificationKind, targetUserId: string, p
   return [{ id: uid('n'), kind, actorId, targetUserId, postId, createdAt: new Date().toISOString() }, ...state.notifications].slice(0, 500);
 }
 
-function reducer(state: AppState, action: Action): AppState {
+// eslint-disable-next-line react-refresh/only-export-components
+export function reducer(state: AppState, action: Action): AppState {
   if (action.type === 'signup') {
     const id = uid('u');
     const user: User = {
@@ -119,6 +123,31 @@ function reducer(state: AppState, action: Action): AppState {
     }
     case 'bookmark':
       return { ...state, bookmarks: { ...state.bookmarks, [me]: toggle(state.bookmarks[me] ?? [], action.postId) } };
+    case 'keep': {
+      const kept = state.bookmarks[me] ?? [];
+      const mine = state.journal?.[me] ?? {};
+      const entry = { note: action.note.trim(), savedAt: mine[action.postId]?.savedAt ?? new Date().toISOString() };
+      return {
+        ...state,
+        bookmarks: { ...state.bookmarks, [me]: kept.includes(action.postId) ? kept : [...kept, action.postId] },
+        journal: { ...state.journal, [me]: { ...mine, [action.postId]: entry } },
+      };
+    }
+    case 'unkeep': {
+      const mine = { ...(state.journal?.[me] ?? {}) };
+      delete mine[action.postId];
+      return {
+        ...state,
+        bookmarks: { ...state.bookmarks, [me]: (state.bookmarks[me] ?? []).filter((id) => id !== action.postId) },
+        journal: { ...state.journal, [me]: mine },
+      };
+    }
+    case 'send': {
+      if (!state.posts[action.postId]) return state;
+      let notifications = state.notifications;
+      for (const to of new Set(action.toUserIds)) notifications = notify({ ...state, notifications }, 'sent', to, action.postId);
+      return { ...state, notifications };
+    }
     case 'follow': {
       const user = state.users[me];
       const adding = !user.following.includes(action.userId);
@@ -199,6 +228,8 @@ export function useStore() {
         .filter((p) => p.replyToId === postId)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     myBookmarks: me ? (state.bookmarks[me.id] ?? []) : [],
+    /** The signed-in member's private note on a kept post, if any. */
+    journalEntry: (postId: string) => (me ? state.journal?.[me.id]?.[postId] : undefined),
     reportedByMe: (postId: string) => Boolean(me && state.reports.some((r) => r.postId === postId && r.reporterId === me.id)),
     myNotifications: me ? state.notifications.filter((n) => n.targetUserId === me.id) : [],
     /** The signed-in member's Reading Circle, or null when they are not in one. */

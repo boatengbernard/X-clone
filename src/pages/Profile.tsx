@@ -1,3 +1,4 @@
+import { BIBLES_BY_LANGUAGE, DEFAULT_BIBLE } from '../bible';
 import { useMemo, useState } from 'react';
 import { Avatar } from '../components/Avatar';
 import { ConfirmDialog } from '../components/Dialogs';
@@ -121,7 +122,7 @@ export function Profile({ handle }: { handle: string }) {
 
 function EditProfile({ user, onClose }: { user: User; onClose: () => void }) {
   const { dispatch } = useStore();
-  const [form, setForm] = useState({ name: user.name, bio: user.bio, location: user.location ?? '', website: user.website ?? '', tradition: user.tradition });
+  const [form, setForm] = useState({ name: user.name, bio: user.bio, location: user.location ?? '', website: user.website ?? '', tradition: user.tradition, bible: user.bible ?? DEFAULT_BIBLE });
   const [confirmReset, setConfirmReset] = useState(false);
   const text = (key: 'name' | 'bio' | 'location' | 'website', label: string, max: number, multiline = false) => (
     <label className="field">
@@ -157,6 +158,21 @@ function EditProfile({ user, onClose }: { user: User; onClose: () => void }) {
               <option key={t}>{t}</option>
             ))}
           </select>
+        </label>
+        <label className="field">
+          <span>Bible translation</span>
+          <select id="ep-bible" value={form.bible} onChange={(e) => setForm({ ...form, bible: e.target.value })}>
+            {BIBLES_BY_LANGUAGE.map(([language, bibles]) => (
+              <optgroup key={language} label={language}>
+                {bibles.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name} ({b.abbr})
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
+          <span className="muted small">Used for verses in Reading Circles and on Scripture cards.</span>
         </label>
         {text('bio', 'Bio', 160, true)}
         {text('location', 'Location', 30)}

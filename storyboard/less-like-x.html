@@ -1,0 +1,375 @@
+<title>Selah Post Actions</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one "today" reference, then five option rows — a phone mock of the post on the left, the decision notes on the right; stacks on phones. Uses Selah's own app palette and type. */
+:root {
+  --ground: #ece5d6;
+  --bg: #f6f1e7;
+  --card: #fffdf8;
+  --fg: #1f2a3c;
+  --mut: #5d6677;
+  --line: #d9d0bd;
+  --gold: #a67c2e;
+  --gold-soft: rgba(166, 124, 46, 0.13);
+  --pray: #b5603b;
+  --share: #2f6f5e;
+  --share-soft: rgba(47, 111, 94, 0.12);
+  --x-red: #b5473b;
+  --frame: #1f2a3c;
+  --sheet-shade: rgba(20, 26, 38, 0.38);
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #10151f; --bg: #141a26; --card: #1c2433; --fg: #f2ede2; --mut: #a8afbd; --line: #2f3a50;
+  --gold: #d9b26a; --gold-soft: rgba(217, 178, 106, 0.15); --pray: #e39a72; --share: #6cc3a5; --share-soft: rgba(108, 195, 165, 0.14);
+  --x-red: #e07a6e; --frame: #05080d; --sheet-shade: rgba(0, 0, 0, 0.5); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --ground: #10151f; --bg: #141a26; --card: #1c2433; --fg: #f2ede2; --mut: #a8afbd; --line: #2f3a50;
+  --gold: #d9b26a; --gold-soft: rgba(217, 178, 106, 0.15); --pray: #e39a72; --share: #6cc3a5; --share-soft: rgba(108, 195, 165, 0.14);
+  --x-red: #e07a6e; --frame: #05080d; --sheet-shade: rgba(0, 0, 0, 0.5); color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--ground); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 44px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 44px; }
+h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
+p { margin: 0 }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+
+/* Intro */
+.intro { display: grid; gap: 12px; max-width: 700px; }
+.intro h1 { font-family: var(--serif); font-size: clamp(34px, 5.4vw, 52px); line-height: 1.04; }
+.lede { font-size: 17px; color: var(--mut); max-width: 62ch; }
+
+/* Today strip */
+.today { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 28px; align-items: center;
+  border: 1px dashed var(--line); border-radius: 16px; padding: 20px; background: var(--bg); }
+.today h2 { font-family: var(--serif); font-size: 24px; }
+.today ul { margin: 8px 0 0; padding-left: 18px; color: var(--mut); display: grid; gap: 4px; }
+.x-mark { outline: 2px solid var(--x-red); outline-offset: 3px; border-radius: 8px; }
+
+/* Option rows */
+.option { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 36px; align-items: start; }
+.notes { display: grid; gap: 16px; min-width: 0; padding-top: 6px; }
+.opt-head { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.num { font-family: var(--serif); font-size: 44px; line-height: .9; color: var(--gold); font-variant-numeric: tabular-nums; }
+.opt-head h2 { font-family: var(--serif); font-size: 30px; line-height: 1.1; }
+.effort { font-size: 12px; font-weight: 600; letter-spacing: .04em; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); white-space: nowrap; }
+.effort b { color: var(--fg); font-weight: 600; }
+.notes .summary { font-size: 17px; max-width: 58ch; }
+dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 8px 18px; margin: 0; max-width: 64ch; }
+dt { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--mut); padding-top: 3px; }
+dd { margin: 0; }
+hr { border: 0; border-top: 1px solid var(--line); margin: 0; }
+
+/* Phone mock */
+.phone { width: 100%; max-width: 300px; background: var(--frame); border-radius: 34px; padding: 10px; box-shadow: 0 18px 40px -24px rgba(20, 26, 38, .5); }
+.screen { background: var(--bg); border-radius: 25px; overflow: hidden; position: relative; min-height: 430px; display: flex; flex-direction: column; }
+.bar { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px 8px; font-family: var(--serif); font-style: italic; color: var(--gold); font-size: 20px; }
+.bar small { font-family: var(--sans); font-style: normal; font-size: 11px; color: var(--mut); }
+.post { padding: 14px 14px 10px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; }
+.av { width: 34px; height: 34px; border-radius: 50%; background: var(--gold); color: #fffdf8; display: grid; place-items: center; font-size: 12px; font-weight: 600; }
+.who { font-size: 13px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.who b { font-weight: 600 }
+.tag { font-size: 10.5px; border: 1px solid var(--line); border-radius: 999px; padding: 0 7px; color: var(--mut); }
+.kind { font-size: 10px; font-weight: 600; letter-spacing: .1em; color: var(--gold); margin-top: 2px; }
+.text { font-family: var(--serif); font-size: 16px; line-height: 1.35; margin: 4px 0 6px; }
+.row { display: flex; align-items: center; gap: 12px; color: var(--mut); font-size: 11.5px; flex-wrap: wrap; }
+.row .sp { margin-left: auto; }
+.act { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.act svg { width: 16px; height: 16px; flex-shrink: 0; }
+.act.on { color: var(--gold); }
+.act.pray { color: var(--pray); }
+.ghost { opacity: .5; padding: 12px 14px; display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; }
+.ghost i { display: block; height: 8px; border-radius: 4px; background: var(--line); margin: 6px 0; }
+.ghost .c { width: 34px; height: 34px; border-radius: 50%; background: var(--line); }
+
+/* Bottom sheet inside the phone */
+.shade { position: absolute; inset: 0; background: var(--sheet-shade); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 18px 18px 0 0; padding: 10px 16px 18px; display: grid; gap: 4px; }
+.grab { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 8px; }
+.sheet-title { font-family: var(--serif); font-size: 17px; font-weight: 600; margin-bottom: 4px; }
+.item { display: flex; align-items: center; gap: 12px; padding: 9px 0; font-size: 13.5px; border-bottom: 1px solid var(--line); }
+.item:last-child { border-bottom: 0 }
+.item svg { width: 18px; height: 18px; color: var(--mut); flex-shrink: 0; }
+.item.warn, .item.warn svg { color: var(--x-red); }
+.note { border: 1px solid var(--line); border-radius: 10px; padding: 9px 10px; font-size: 12.5px; color: var(--mut); min-height: 56px; background: var(--bg); }
+.btn { display: inline-flex; justify-content: center; align-items: center; border-radius: 999px; font-weight: 600; font-size: 13px; padding: 8px 14px; background: var(--fg); color: var(--bg); }
+.btn.line { background: transparent; color: var(--fg); border: 1px solid var(--line); }
+.btns { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+
+/* Option 4: verse card */
+.vcard { background: #fbf6ea; color: #1f2a3c; border-radius: 12px; padding: 16px 16px 12px; border: 1px solid #e3d8bf; display: grid; gap: 8px; }
+.vcard .ref { font-size: 10px; letter-spacing: .14em; font-weight: 600; color: #a67c2e; }
+.vcard .verse { font-family: var(--serif); font-size: 15px; line-height: 1.35; font-style: italic; }
+.vcard .refl { font-size: 11.5px; color: #5d6677; }
+.vcard .mark { display: flex; justify-content: space-between; font-size: 10.5px; color: #5d6677; border-top: 1px solid #e3d8bf; padding-top: 6px; }
+.vcard .mark span:first-child { font-family: var(--serif); font-style: italic; color: #a67c2e; font-size: 13px; }
+
+/* Option 5: cards, not a timeline */
+.feed-cards { padding: 4px 10px 12px; display: grid; gap: 10px; }
+.pcard { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 14px 14px 12px; position: relative; display: grid; gap: 4px; }
+.ribbon { position: absolute; top: -1px; right: 16px; width: 18px; height: 28px; background: var(--gold); clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 74%, 0 100%); }
+.pills { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.pill { font-size: 11.5px; font-weight: 500; border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; display: inline-flex; gap: 5px; align-items: center; color: var(--fg); }
+.pill svg { width: 14px; height: 14px; }
+.pill.on { background: var(--gold-soft); border-color: transparent; color: var(--gold); }
+.passlink { font-size: 11.5px; color: var(--share); margin-left: auto; align-self: center; }
+
+/* Option 1: labeled actions */
+.labeled .act { font-size: 11px; }
+
+.foot { border-top: 1px solid var(--line); padding-top: 20px; color: var(--mut); max-width: 64ch; }
+.foot b { color: var(--fg); }
+
+@media (max-width: 760px) {
+  .option, .today { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .phone { margin: 0 auto; }
+  .opt-head h2 { font-size: 26px; }
+  dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  dd { margin-bottom: 10px; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-reply" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-12.3 7.4L3 20.5l1.6-5.3A8.4 8.4 0 1 1 21 11.5z"/></symbol>
+    <symbol id="i-amen" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21l-1-9.5c-.2-1.6.4-4.5 1-6.5.6 2 1.2 4.9 1 6.5z"/><path d="M11 11.5L7 7.5c-.8-.8-2-.8-2.6.1-.5.7-.3 1.6.3 2.2L9 14.5 9.5 21M13 11.5l4-4c.8-.8 2-.8 2.6.1.5.7.3 1.6-.3 2.2L15 14.5 14.5 21"/></symbol>
+    <symbol id="i-candle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.6 1.8 2 3 2 4a2 2 0 0 1-4 0c0-1 .4-2.2 2-4z"/><rect x="8.5" y="11" width="7" height="10" rx="1"/></symbol>
+    <symbol id="i-repost" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V7a2 2 0 0 1 2-2h12l-3-3M20 15v2a2 2 0 0 1-2 2H6l3 3"/></symbol>
+    <symbol id="i-bookmark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></symbol>
+    <symbol id="i-share" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></symbol>
+    <symbol id="i-keep" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19.5V5a2 2 0 0 1 2-2h12v15H7a2 2 0 0 0-2 1.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19"/><path d="M14 3v7l-1.75-1.3L10.5 10V3"/></symbol>
+    <symbol id="i-pass" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15h3c1.5 0 2.5-1.5 4-1.5h4a1.6 1.6 0 0 1 0 3.2h-3"/><path d="M14 16.7l4.6-2.9a1.6 1.6 0 0 1 2 2.4l-4.8 4a4 4 0 0 1-2.6.8H3"/><path d="M15 3.5l2.5 2.5L15 8.5M8 6h9.5"/></symbol>
+    <symbol id="i-journal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M12.5 8H16M12.5 12H16"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7"/><circle cx="19" cy="12" r="1.7"/></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+    <symbol id="i-person" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h11l-2 4 2 4H5"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></symbol>
+  </defs>
+</svg>
+
+<main class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Selah · design options</p>
+    <h1>Five ways to make Selah's posts its own</h1>
+    <p class="lede">Today the row under every post copies X: small grey icons, with bookmark and share pushed to the right edge. Each option below replaces that with something that belongs to Selah. Pick one, or combine them. Options 1 and 3 work well together.</p>
+  </header>
+
+  <section class="today" aria-labelledby="today-h">
+    <div class="phone" aria-label="Current Selah post">
+      <div class="screen" style="min-height:0">
+        <div class="post">
+          <div class="av">AO</div>
+          <div>
+            <div class="who"><b>Abena Owusu</b><span class="tag">Evangelical</span><span style="color:var(--mut)">· 4h</span></div>
+            <div class="kind">DEVOTION · ISAIAH 41:10</div>
+            <p class="text">Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.</p>
+            <div class="row">
+              <span class="act"><svg><use href="#i-reply"/></svg></span>
+              <span class="act"><svg><use href="#i-amen"/></svg>Amen 3</span>
+              <span class="act"><svg><use href="#i-candle"/></svg>Praying 1</span>
+              <span class="act"><svg><use href="#i-repost"/></svg></span>
+              <span class="act sp x-mark" style="gap:10px"><svg><use href="#i-bookmark"/></svg><svg><use href="#i-share"/></svg></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow">Today</p>
+      <h2 id="today-h">What reads as X</h2>
+      <ul>
+        <li>The bookmark and share-arrow icons pushed to the far right (outlined in red) are X's exact layout and shapes.</li>
+        <li>A row of small grey icons with numbers beside them, the same rhythm as X's.</li>
+        <li>A flat list of posts divided by thin lines, the same as X's timeline.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 1 -->
+  <article class="option" aria-labelledby="o1">
+    <div class="phone"><div class="screen">
+      <div class="bar">Selah <small>Gathered</small></div>
+      <div class="post">
+        <div class="av">AO</div>
+        <div>
+          <div class="who"><b>Abena Owusu</b><span class="tag">Evangelical</span></div>
+          <div class="kind">DEVOTION · ISAIAH 41:10</div>
+          <p class="text">Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.</p>
+          <div class="row labeled" style="gap:10px 12px">
+            <span class="act"><svg><use href="#i-reply"/></svg>Reply</span>
+            <span class="act on"><svg><use href="#i-amen"/></svg>Amen 3</span>
+            <span class="act"><svg><use href="#i-candle"/></svg>Praying 1</span>
+            <span class="act"><svg><use href="#i-keep"/></svg>Keep</span>
+            <span class="act" style="color:var(--share)"><svg><use href="#i-pass"/></svg>Pass it on</span>
+          </div>
+        </div>
+      </div>
+      <div class="ghost"><div class="c"></div><div><i style="width:60%"></i><i></i><i style="width:80%"></i></div></div>
+    </div></div>
+    <div class="notes">
+      <div class="opt-head"><span class="num">1</span><h2 id="o1">Keep &amp; Pass it on</h2><span class="effort">Effort: <b>small</b></span></div>
+      <p class="summary">Every action gets a word next to its icon. Bookmark becomes <b>Keep</b>, drawn as a Bible with a ribbon. Share becomes <b>Pass it on</b>, drawn as an open hand.</p>
+      <dl>
+        <dt>What changes</dt><dd>New Keep and Pass it on icons and labels. The Bookmarks page is renamed Kept. Repost moves into Pass it on, which also offers Copy link.</dd>
+        <dt>Why not X</dt><dd>X uses bare icons. Words make the row read like Selah, and the ribbon and hand shapes are Selah's own.</dd>
+        <dt>Trade-off</dt><dd>The row is busier. On small phones the words wrap onto two lines.</dd>
+      </dl>
+    </div>
+  </article>
+  <hr>
+
+  <!-- 2 -->
+  <article class="option" aria-labelledby="o2">
+    <div class="phone"><div class="screen">
+      <div class="bar">Selah <small>Gathered</small></div>
+      <div class="post">
+        <div class="av">AO</div>
+        <div>
+          <div class="who"><b>Abena Owusu</b><span class="tag">Evangelical</span></div>
+          <div class="kind">DEVOTION · ISAIAH 41:10</div>
+          <p class="text">Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.</p>
+          <div class="row">
+            <span class="act"><svg><use href="#i-reply"/></svg></span>
+            <span class="act"><svg><use href="#i-amen"/></svg>Amen 3</span>
+            <span class="act"><svg><use href="#i-candle"/></svg>Praying 1</span>
+            <span class="act sp on"><svg><use href="#i-journal"/></svg>Journal</span>
+          </div>
+        </div>
+      </div>
+      <div class="shade"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <p class="sheet-title">Add to your journal</p>
+        <p style="font-size:12px;color:var(--mut)">Only you can see this note.</p>
+        <div class="note">I needed this today. Read again on Friday before the interview…</div>
+        <div class="btns"><span class="btn line">Cancel</span><span class="btn">Save to journal</span></div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <div class="opt-head"><span class="num">2</span><h2 id="o2">The Journal</h2><span class="effort">Effort: <b>medium</b></span></div>
+      <p class="summary">Bookmarking becomes <b>Add to journal</b>. When you save a post, you can write a private note about why it spoke to you. The Bookmarks tab becomes your <b>Journal</b>.</p>
+      <dl>
+        <dt>What changes</dt><dd>A notebook icon replaces the bookmark. Saving opens a sheet with an optional private note. The Journal page shows each saved post with your note and the date you saved it. Share moves into the ⋯ menu.</dd>
+        <dt>Why not X</dt><dd>X bookmarks are a silent pile of saved posts. A journal with your own reflections is a devotional habit and has no X equivalent.</dd>
+        <dt>Trade-off</dt><dd>It takes more building: notes need saving, plus a new Journal page layout.</dd>
+      </dl>
+    </div>
+  </article>
+  <hr>
+
+  <!-- 3 -->
+  <article class="option" aria-labelledby="o3">
+    <div class="phone"><div class="screen">
+      <div class="bar">Selah <small>Gathered</small></div>
+      <div class="post">
+        <div class="av">AO</div>
+        <div>
+          <div class="who"><b>Abena Owusu</b><span class="tag">Evangelical</span></div>
+          <div class="kind">DEVOTION · ISAIAH 41:10</div>
+          <p class="text">Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.</p>
+          <div class="row">
+            <span class="act on"><svg><use href="#i-amen"/></svg>Amen 3</span>
+            <span class="act"><svg><use href="#i-candle"/></svg>Praying 1</span>
+            <span class="act"><svg><use href="#i-reply"/></svg>Reply</span>
+            <span class="act sp"><svg><use href="#i-more"/></svg></span>
+          </div>
+        </div>
+      </div>
+      <div class="shade"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <div class="item"><svg><use href="#i-keep"/></svg>Keep this post</div>
+        <div class="item"><svg><use href="#i-person"/></svg>Send to a member</div>
+        <div class="item"><svg><use href="#i-repost"/></svg>Repost to your followers</div>
+        <div class="item"><svg><use href="#i-link"/></svg>Copy link</div>
+        <div class="item warn"><svg><use href="#i-flag"/></svg>Report</div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <div class="opt-head"><span class="num">3</span><h2 id="o3">One quiet menu</h2><span class="effort">Effort: <b>small</b></span></div>
+      <p class="summary">The row keeps only the three responses that matter on Selah: <b>Amen</b>, <b>Praying</b> and <b>Reply</b>. Keep, send, repost, copy link and report all move into a single <b>⋯</b> menu that slides up from the bottom.</p>
+      <dl>
+        <dt>What changes</dt><dd>Bookmark, share and repost leave the row, and the report flag leaves the top of each post. Tapping ⋯ opens one sheet with all of them.</dd>
+        <dt>Why not X</dt><dd>X's five-icon row disappears. What's left is calmer and puts Amen first, which fits "a calm social network".</dd>
+        <dt>Trade-off</dt><dd>Saving and sharing take one extra tap.</dd>
+      </dl>
+    </div>
+  </article>
+  <hr>
+
+  <!-- 4 -->
+  <article class="option" aria-labelledby="o4">
+    <div class="phone"><div class="screen">
+      <div class="bar">Selah <small>Pass it on</small></div>
+      <div style="padding:6px 14px 0;display:grid;gap:12px">
+        <div class="vcard">
+          <span class="ref">ISAIAH 41:10</span>
+          <p class="verse">“So do not fear, for I am with you; do not be dismayed, for I am your God.”</p>
+          <p class="refl">Abena: “Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.”</p>
+          <div class="mark"><span>✝ Selah</span><span>selah · @abena</span></div>
+        </div>
+      </div>
+      <div class="sheet" style="position:static;margin-top:auto;border-top:1px solid var(--line)">
+        <div class="item"><svg><use href="#i-person"/></svg>Send to a member in Selah</div>
+        <div class="item"><svg><use href="#i-image"/></svg>Save as image for WhatsApp or Instagram</div>
+        <div class="item"><svg><use href="#i-link"/></svg>Copy link</div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <div class="opt-head"><span class="num">4</span><h2 id="o4">Verse cards</h2><span class="effort">Effort: <b>medium–large</b></span></div>
+      <p class="summary">Sharing a devotion turns it into a <b>Scripture card</b>: the passage in serif type, the member's reflection, and the Selah mark, ready to send in Selah or save as an image for WhatsApp or Instagram.</p>
+      <dl>
+        <dt>What changes</dt><dd>The share arrow becomes Pass it on. On devotions it opens the card preview. Other posts get the plain send and copy-link options.</dd>
+        <dt>Why not X</dt><dd>X shares a link. A Scripture card is something churches and friends already pass around, and it carries Selah's name with it, which also helps growth.</dd>
+        <dt>Trade-off</dt><dd>Drawing the image takes the most work of the five. Verse text also needs a Bible translation Selah is allowed to show.</dd>
+      </dl>
+    </div>
+  </article>
+  <hr>
+
+  <!-- 5 -->
+  <article class="option" aria-labelledby="o5">
+    <div class="phone"><div class="screen" style="background:var(--ground)">
+      <div class="bar">Selah <small>Gathered</small></div>
+      <div class="feed-cards">
+        <div class="pcard">
+          <span class="ribbon" title="Kept"></span>
+          <div class="who"><span class="av" style="width:26px;height:26px;font-size:10px">AO</span><b>Abena Owusu</b><span class="tag">Evangelical</span></div>
+          <div class="kind">DEVOTION · ISAIAH 41:10</div>
+          <p class="text" style="font-size:15px">Fear has been loud this week. Reading this slowly and letting it be quieter than the noise.</p>
+          <div class="pills">
+            <span class="pill on"><svg><use href="#i-amen"/></svg>Amen · 3</span>
+            <span class="pill"><svg><use href="#i-candle"/></svg>Pray</span>
+            <span class="pill"><svg><use href="#i-reply"/></svg>Reply</span>
+            <span class="passlink">Pass it on</span>
+          </div>
+        </div>
+        <div class="pcard" style="opacity:.55">
+          <div class="who"><span class="av" style="width:26px;height:26px;font-size:10px;background:var(--mut)">SW</span><b>Sam Whitaker</b><span class="tag">Seeker</span></div>
+          <p class="text" style="font-size:15px">Is baptism something God does to us, or something we do for God?</p>
+        </div>
+      </div>
+    </div></div>
+    <div class="notes">
+      <div class="opt-head"><span class="num">5</span><h2 id="o5">Cards, not a timeline</h2><span class="effort">Effort: <b>medium</b></span></div>
+      <p class="summary">The biggest visual break from X. Posts become separate <b>paper cards</b> with space between them. Responses become soft <b>pill buttons</b>. Keeping a post drops a gold <b>ribbon</b> on the card's corner, like a ribbon marker in a Bible.</p>
+      <dl>
+        <dt>What changes</dt><dd>The feed, profile and search lists all switch from ruled rows to cards. The bookmark icon is gone: you tap and hold a card, or use ⋯, to keep it, and the ribbon shows it's kept. Pass it on becomes a quiet text link.</dd>
+        <dt>Why not X</dt><dd>X's look is a flat, ruled timeline. Cards with ribbons look like a devotional, not a newsfeed, even at a glance.</dd>
+        <dt>Trade-off</dt><dd>Fewer posts fit on screen, and it touches most pages, so it needs a careful pass on phones.</dd>
+      </dl>
+    </div>
+  </article>
+
+  <footer class="foot">
+    <p><b>To choose:</b> reply with the numbers you want, for example "1 and 3" or "just 5". Options 1, 3 and 5 can be combined. Option 2 or option 4 can replace the Keep or Pass it on part of any of them.</p>
+  </footer>
+</main>

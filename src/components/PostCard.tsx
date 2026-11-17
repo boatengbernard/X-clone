@@ -6,8 +6,9 @@ import { findVideo, fullDate, richText, timeAgo, traditionsInReplies, whyYouSee 
 import { Avatar, TraditionTag, UserName } from './Avatar';
 import { Composer } from './Composer';
 import { ConfirmDialog, ReportDialog } from './Dialogs';
-import { AmenIcon, BookmarkIcon, CandleIcon, FlagIcon, ReplyIcon, RepostIcon, ShareIcon, TrashIcon } from './Icons';
+import { AmenIcon, CandleIcon, MoreIcon, PassIcon, ReplyIcon, RepostIcon } from './Icons';
 import { Modal } from './Modal';
+import { JournalSheet, MoreSheet, PassSheet } from './PostSheets';
 import { VideoCard } from './VideoCard';
 
 interface Props {
@@ -20,7 +21,7 @@ interface Props {
 
 export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: Props) {
   const { state, dispatch, me, repliesTo, myBookmarks, reportedByMe } = useStore();
-  const [dialog, setDialog] = useState<'reply' | 'delete' | 'report' | null>(null);
+  const [dialog, setDialog] = useState<'reply' | 'delete' | 'report' | 'more' | 'journal' | 'pass' | null>(null);
   const [toast, setToast] = useState('');
   const [revealed, setRevealed] = useState(false);
   const author = state.users[post.authorId];
@@ -32,8 +33,7 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
   const replyTraditions = traditionsInReplies(replies, state.users).length;
   const amened = post.amens.includes(me.id);
   const praying = post.praying.includes(me.id);
-  const reposted = post.reposts.includes(me.id);
-  const bookmarked = myBookmarks.includes(post.id);
+  const kept = myBookmarks.includes(post.id);
   const reported = reportedByMe(post.id);
   const reposter = repostedBy ? state.users[repostedBy] : undefined;
   const video = findVideo(post.text);
@@ -46,15 +46,6 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
   const flash = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(''), 2200);
-  };
-  const share = async () => {
-    const url = `${location.origin}${location.pathname}#/post/${post.id}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      flash('Link copied');
-    } catch {
-      flash('Copy this link: ' + url);
-    }
   };
 
   if (reported && !revealed) {
@@ -69,7 +60,11 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
   }
 
   return (
-    <article className={`post ${detail ? 'post-detail' : ''} ${showThreadLine ? 'post-ancestor' : ''}`} onClick={detail ? undefined : () => navigate(`/post/${post.id}`)}>
+    <article
+      className={`post ${detail ? 'post-detail' : ''} ${showThreadLine ? 'post-ancestor' : ''} ${kept ? 'post-kept' : ''}`}
+      onClick={detail ? undefined : () => navigate(`/post/${post.id}`)}
+    >
+      {kept && <span className="ribbon" role="img" aria-label="In your journal" title="In your journal" />}
       {reposter && (
         <div className="post-context">
           <RepostIcon width={14} height={14} />
@@ -92,17 +87,6 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
                 · {timeAgo(post.createdAt)}
               </time>
             )}
-            <div className="post-menu">
-              {author.id === me.id ? (
-                <button className="icon-btn danger" aria-label="Delete post" title="Delete" onClick={stop(() => setDialog('delete'))}>
-                  <TrashIcon />
-                </button>
-              ) : (
-                <button className="icon-btn danger" aria-label="Report post" title="Report" onClick={stop(() => setDialog('report'))}>
-                  <FlagIcon />
-                </button>
-              )}
-            </div>
           </header>
 
           {(post.kind !== 'post' || post.stance || (parentAuthor && !showThreadLine)) && (
@@ -133,30 +117,30 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
           {showWhy && !post.replyToId && <div className="why">Why you see this: {whyYouSee(post, me, author, replyTraditions)}</div>}
 
           <div className="post-actions">
-            <button className="action reply" aria-label={`Reply, ${replies.length} replies`} onClick={stop(() => setDialog('reply'))}>
-              <ReplyIcon />
-              <span>{replies.length || ''}</span>
-            </button>
-            <button className={`action amen ${amened ? 'active' : ''}`} aria-label="Amen" aria-pressed={amened} onClick={stop(() => dispatch({ type: 'amen', postId: post.id }))}>
+            <button className={`pill-btn amen ${amened ? 'active' : ''}`} aria-pressed={amened} onClick={stop(() => dispatch({ type: 'amen', postId: post.id }))}>
               <AmenIcon filled={amened} />
-              <span>Amen{post.amens.length ? ` ${post.amens.length}` : ''}</span>
+              <span className="pill-word">Amen</span>
+              {post.amens.length > 0 && <span className="pill-count">{post.amens.length}</span>}
             </button>
             {showPraying && (
-              <button className={`action praying ${praying ? 'active' : ''}`} aria-label="Praying" aria-pressed={praying} onClick={stop(() => dispatch({ type: 'praying', postId: post.id }))}>
+              <button className={`pill-btn praying ${praying ? 'active' : ''}`} aria-pressed={praying} onClick={stop(() => dispatch({ type: 'praying', postId: post.id }))}>
                 <CandleIcon filled={praying} />
-                <span>Praying{post.praying.length ? ` ${post.praying.length}` : ''}</span>
+                <span className="pill-word">Praying</span>
+                {post.praying.length > 0 && <span className="pill-count">{post.praying.length}</span>}
               </button>
             )}
-            <button className={`action repost ${reposted ? 'active' : ''}`} aria-label={reposted ? 'Undo repost' : 'Repost'} aria-pressed={reposted} onClick={stop(() => dispatch({ type: 'repost', postId: post.id }))}>
-              <RepostIcon />
-              <span>{post.reposts.length || ''}</span>
+            <button className="pill-btn reply" aria-label={`Reply, ${replies.length} ${replies.length === 1 ? 'reply' : 'replies'}`} onClick={stop(() => setDialog('reply'))}>
+              <ReplyIcon />
+              <span className="pill-word">Reply</span>
+              {replies.length > 0 && <span className="pill-count">{replies.length}</span>}
             </button>
-            <div className="action-group">
-              <button className={`action bookmark ${bookmarked ? 'active' : ''}`} aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'} aria-pressed={bookmarked} onClick={stop(() => dispatch({ type: 'bookmark', postId: post.id }))}>
-                <BookmarkIcon filled={bookmarked} width={18} height={18} />
+            <div className="post-actions-end">
+              <button className="pass-btn" onClick={stop(() => setDialog('pass'))}>
+                <PassIcon />
+                <span className="pass-word">Pass it on</span>
               </button>
-              <button className="action" aria-label="Copy link" onClick={stop(share)}>
-                <ShareIcon />
+              <button className="more-btn" aria-label="More options" onClick={stop(() => setDialog('more'))}>
+                <MoreIcon />
               </button>
             </div>
           </div>
@@ -199,6 +183,18 @@ export function PostCard({ post, repostedBy, detail, showThreadLine, showWhy }: 
               }}
             />
           )}
+          {dialog === 'more' && (
+            <MoreSheet
+              post={post}
+              onClose={() => setDialog(null)}
+              onJournal={() => setDialog('journal')}
+              onReport={() => setDialog('report')}
+              onDelete={() => setDialog('delete')}
+              done={flash}
+            />
+          )}
+          {dialog === 'journal' && <JournalSheet post={post} onClose={() => setDialog(null)} done={flash} />}
+          {dialog === 'pass' && <PassSheet post={post} onClose={() => setDialog(null)} done={flash} />}
           {dialog === 'report' && <ReportDialog onClose={() => setDialog(null)} onSubmit={(reason) => dispatch({ type: 'report', postId: post.id, reason })} />}
         </div>
       )}

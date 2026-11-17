@@ -3,11 +3,14 @@ import { localDate } from '../../circles/dates';
 import { loadPassage, type Verse } from '../../circles/passage';
 import { passageLink, type Plan } from '../../circles/plans';
 import { mentionsCrisis } from '../../circles/safety';
+import { bibleById } from '../../bible';
+import { BiblePicker } from '../../components/BiblePicker';
 import { useStore } from '../../store';
 import { CrisisHelp } from './shared';
 
 export function Reading({ plan, day, onBack, onDone }: { plan: Plan; day: number; onBack: () => void; onDone: (shared: string) => void }) {
-  const { dispatch } = useStore();
+  const { dispatch, me } = useStore();
+  const bible = bibleById(me.bible);
   const { ref, question } = plan.days[day - 1];
   const [verses, setVerses] = useState<Verse[] | null>(null);
   const [failed, setFailed] = useState(false);
@@ -18,9 +21,9 @@ export function Reading({ plan, day, onBack, onDone }: { plan: Plan; day: number
     let live = true;
     setVerses(null);
     setFailed(false);
-    loadPassage(ref).then((v) => live && setVerses(v), () => live && setFailed(true));
+    loadPassage(ref, bible.id).then((v) => live && setVerses(v), () => live && setFailed(true));
     return () => { live = false; };
-  }, [ref]);
+  }, [ref, bible.id]);
 
   function finish(withShare: boolean) {
     const text = withShare ? share.trim() : '';
@@ -42,7 +45,7 @@ export function Reading({ plan, day, onBack, onDone }: { plan: Plan; day: number
           {!verses && !failed && <p className="muted">Loading the passage…</p>}
           {failed && (
             <div className="note">
-              The passage didn't load. <a href={passageLink(ref)} target="_blank" rel="noreferrer">Read {ref} on BibleGateway</a>, then come back and mark it read.
+              The passage didn't load. <a href={passageLink(ref, bible.id)} target="_blank" rel="noreferrer">Read {ref} on BibleGateway</a>, then come back and mark it read.
             </div>
           )}
           {verses && (
@@ -50,9 +53,10 @@ export function Reading({ plan, day, onBack, onDone }: { plan: Plan; day: number
               {verses.map((v) => (
                 <span key={`${v.chapter}:${v.verse}`}><sup>{multiChapter ? `${v.chapter}:${v.verse}` : v.verse}</sup>{v.text} </span>
               ))}
-              <p className="muted small">King James Version</p>
+              <p className="muted small">{bible.name}</p>
             </div>
           )}
+          <BiblePicker id="reading-bible" />
           <div className="note calm"><span className="eyebrow">One question</span><p>{question}</p></div>
           <button className="btn honey" onClick={() => setStep('share')}>I've read it</button>
         </>

@@ -44,7 +44,7 @@ function SignUp() {
     const next: typeof errors = {};
     if (!form.name.trim()) next.name = 'Enter your name.';
     if (!HANDLE_RE.test(form.handle)) next.handle = 'Use 3–15 lowercase letters, numbers or underscores.';
-    else if (users.some((u) => u.handle === form.handle) || ['home', 'explore', 'notifications', 'bookmarks', 'circles', 'post', 'login', 'signup', 'welcome'].includes(form.handle))
+    else if (users.some((u) => u.handle === form.handle) || ['home', 'explore', 'notifications', 'bookmarks', 'journal', 'circles', 'post', 'login', 'signup', 'welcome'].includes(form.handle))
       next.handle = 'That username is taken. Try another.';
     if (!EMAIL_RE.test(form.email.trim())) next.email = 'Enter a valid email address.';
     else if (users.some((u) => u.email?.toLowerCase() === form.email.trim().toLowerCase())) next.email = 'An account already uses this email. Log in instead.';
@@ -66,8 +66,8 @@ function SignUp() {
         <input id="su-name" value={form.name} onChange={set('name')} autoComplete="name" maxLength={50} />
       </Field>
       <Field id="su-handle" label="Username" error={errors.handle}>
-        <div className="prefix-input">
-          <span>@</span>
+        <div className="prefix-input" onClick={() => document.getElementById('su-handle')?.focus()}>
+          <span aria-hidden="true">@</span>
           <input id="su-handle" value={form.handle} onChange={set('handle')} autoComplete="username" maxLength={15} />
         </div>
       </Field>
