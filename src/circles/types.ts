@@ -37,10 +37,21 @@ export interface Circle {
   next: Record<string, string>;
 }
 
-export type MessageKind = 'share' | 'prayer' | 'note';
+export type MessageKind = 'share' | 'prayer' | 'note' | 'verse';
+
+/** Reactions on a chat message. "pray" is stored in `prayers`, the rest in `reactions`. */
+export type Reaction = 'pray' | 'amen' | 'love' | 'with' | 'peace';
+
+export interface SharedVerse {
+  ref: string;
+  text: string;
+  /** Translation name, e.g. "King James Version". */
+  bible: string;
+}
 
 export interface CircleMessage {
   id: string;
+  /** The circle's id for its group chat, or a private chat id (`dm:<user>:<user>`, see chat.ts). */
   circleId: string;
   userId: string;
   kind: MessageKind;
@@ -51,6 +62,17 @@ export interface CircleMessage {
   /** Mentions self-harm. The guide is alerted and the writer sees crisis help. */
   flagged: boolean;
   reports: string[];
+  /** The message this one answers, shown as a quote above it. */
+  replyToId?: string;
+  verse?: SharedVerse;
+  /** Members named with "Encourage someone". */
+  mentions?: string[];
+  reactions?: Partial<Record<Exclude<Reaction, 'pray'>, string[]>>;
+}
+
+export interface SavedMessage {
+  messageId: string;
+  savedAt: string;
 }
 
 export interface CircleMember {
@@ -68,6 +90,10 @@ export interface CircleData {
   circles: Circle[];
   memberships: Membership[];
   circleMessages: CircleMessage[];
+  /** user id -> chat id -> when they last had that chat open (ISO). */
+  chatReads?: Record<string, Record<string, string>>;
+  /** user id -> chat messages they kept in their Journal. */
+  savedMessages?: Record<string, SavedMessage[]>;
 }
 
 export type CirclePrefs = Pick<Membership, 'rhythm' | 'reminderTime' | 'nudge'>;

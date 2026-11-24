@@ -35,7 +35,7 @@ export function Reading({ plan, day, onBack, onDone }: { plan: Plan; day: number
 
   return (
     <section className="reading">
-      <button className="back" onClick={onBack}>‹ Circle</button>
+      <button className="back" onClick={onBack}>‹ Back to chat</button>
       <div className="progress" aria-label={`Day ${day} of ${plan.days.length}`}><i style={{ width: `${(day / plan.days.length) * 100}%` }} /></div>
       <span className="eyebrow">Day {day} of {plan.days.length} · {plan.title}</span>
       <h2 className="ref">{ref}</h2>

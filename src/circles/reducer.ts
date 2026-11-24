@@ -4,7 +4,8 @@ import { chooseGuide, findOpenCircle, pickName } from './matching.ts';
 import { planById } from './plans.ts';
 import { nextDay } from './progress.ts';
 import { mentionsCrisis } from './safety.ts';
-import type { Circle, CirclePrefs, CircleView, Membership, MessageKind } from './types.ts';
+import { canPost, canRead, chatMemberIds, isDm } from './chat.ts';
+import type { Circle, CircleMessage, CirclePrefs, CircleView, Membership, MessageKind, Reaction, SharedVerse } from './types.ts';
 
 export const MAX_MESSAGE = 600;
 
@@ -12,13 +13,33 @@ export type CircleAction =
   | { type: 'circleJoin'; planId: string; prefs: CirclePrefs; today: DateStr }
   | { type: 'circleSettings'; prefs: CirclePrefs }
   | { type: 'circleRead'; day: number; today: DateStr; share: string }
-  | { type: 'circleMessage'; kind: MessageKind; text: string }
-  | { type: 'circlePray' | 'circleReport'; messageId: string }
+  | {
+      type: 'circleMessage';
+      kind: MessageKind;
+      text: string;
+      /** Defaults to the member's circle. */
+      chatId?: string;
+      replyToId?: string;
+      verse?: SharedVerse;
+      mentions?: string[];
+      /** Reading day a "share" message is about. */
+      day?: number;
+    }
+  | { type: 'circlePray'; messageId: string }
+  | { type: 'circleReport'; messageId: string }
+  | { type: 'saveMessage'; messageId: string }
+  | { type: 'circleReact'; messageId: string; reaction: Reaction }
+  | { type: 'chatRead'; chatId: string; at: string }
+  /** A reply from another member's (simulated) phone. */
+  | { type: 'chatIncoming'; chatId: string; fromUserId: string; text: string; replyToId?: string }
   | { type: 'circleLeave' }
   | { type: 'circleNext'; planId: string; today: DateStr }
   | { type: 'becomeGuide' };
 
-const CIRCLE_ACTIONS = new Set<string>(['circleJoin', 'circleSettings', 'circleRead', 'circleMessage', 'circlePray', 'circleReport', 'circleLeave', 'circleNext', 'becomeGuide']);
+const CIRCLE_ACTIONS = new Set<string>([
+  'circleJoin', 'circleSettings', 'circleRead', 'circleMessage', 'circlePray', 'circleReport', 'circleLeave', 'circleNext', 'becomeGuide',
+  'circleReact', 'saveMessage', 'chatRead', 'chatIncoming',
+]);
 export const isCircleAction = (a: { type: string }): a is CircleAction => CIRCLE_ACTIONS.has(a.type);
 
 const uid = (prefix: string) => `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}`;
@@ -57,6 +78,10 @@ export function circleReducer(state: AppState, action: CircleAction, meId: strin
   const me = users[meId];
   const userMap = new Map(Object.entries(users));
   const done = (): AppState => ({ ...state, users, circles, memberships, circleMessages });
+  const toggle = (list: string[]) => (list.includes(meId) ? list.filter((id) => id !== meId) : [...list, meId]);
+  const newMessage = (chatId: string, userId: string, kind: MessageKind, text: string, extra: Partial<CircleMessage> = {}): CircleMessage => ({
+    id: uid('cm'), circleId: chatId, userId, kind, text, createdAt: new Date().toISOString(), prayers: [], flagged: mentionsCrisis(text), reports: [], ...extra,
+  });
 
   const mine = () => memberships.find((m) => m.userId === meId && m.active);
 
@@ -94,6 +119,68 @@ export function circleReducer(state: AppState, action: CircleAction, meId: strin
     return done();
   }
 
+  // Chat actions work in any chat the member can see, including private chats and past circles.
+  if (action.type === 'chatRead') {
+    if (!canRead(state, action.chatId, meId)) return state;
+    return { ...state, chatReads: { ...state.chatReads, [meId]: { ...state.chatReads?.[meId], [action.chatId]: action.at } } };
+  }
+  if (action.type === 'saveMessage') {
+    const msg = state.circleMessages.find((x) => x.id === action.messageId);
+    if (!msg || !canRead(state, msg.circleId, meId)) return state;
+    const saved = state.savedMessages?.[meId] ?? [];
+    const next = saved.some((x) => x.messageId === msg.id) ? saved.filter((x) => x.messageId !== msg.id) : [...saved, { messageId: msg.id, savedAt: new Date().toISOString() }];
+    return { ...state, savedMessages: { ...state.savedMessages, [meId]: next } };
+  }
+  if (action.type === 'circlePray' || action.type === 'circleReport' || action.type === 'circleReact') {
+    const msg = circleMessages.find((x) => x.id === action.messageId);
+    if (!msg || !canRead(state, msg.circleId, meId)) return state;
+    if (action.type === 'circleReport') {
+      if (msg.userId === meId) return state;
+      if (!msg.reports.includes(meId)) msg.reports.push(meId);
+    } else if (action.type === 'circlePray') msg.prayers = toggle(msg.prayers);
+    else if (action.reaction === 'pray') msg.prayers = toggle(msg.prayers);
+    else if (['amen', 'love', 'with', 'peace'].includes(action.reaction)) {
+      const key = action.reaction as Exclude<Reaction, 'pray'>;
+      msg.reactions = { ...msg.reactions, [key]: toggle(msg.reactions?.[key] ?? []) };
+    } else return state;
+    return done();
+  }
+  if (action.type === 'chatIncoming') {
+    const text = action.text.trim().slice(0, MAX_MESSAGE);
+    if (!text || action.fromUserId === meId || !users[action.fromUserId] || !chatMemberIds(state, action.chatId).includes(action.fromUserId) || !canRead(state, action.chatId, meId))
+      return state;
+    const replyToId = circleMessages.some((x) => x.id === action.replyToId && x.circleId === action.chatId) ? action.replyToId : undefined;
+    circleMessages.push(newMessage(action.chatId, action.fromUserId, 'note', text, replyToId ? { replyToId } : {}));
+    return done();
+  }
+  if (action.type === 'circleMessage' && action.chatId && isDm(action.chatId)) {
+    if (!canPost(state, action.chatId, meId)) return state;
+    const msg = composeMessage(action.chatId);
+    if (!msg) return state;
+    circleMessages.push(msg);
+    return done();
+  }
+
+  /** Builds a message from a circleMessage action, or null when it has nothing to send. */
+  function composeMessage(chatId: string): CircleMessage | null {
+    if (action.type !== 'circleMessage') return null;
+    const text = action.text.trim().slice(0, MAX_MESSAGE);
+    const verse = action.verse && action.verse.ref && action.verse.text
+      ? { ref: action.verse.ref.slice(0, 80), text: action.verse.text.slice(0, 2000), bible: (action.verse.bible || '').slice(0, 80) }
+      : undefined;
+    if (!text && !verse) return null;
+    const day = action.kind === 'share' && Number.isInteger(action.day) && action.day! > 0 && action.day! <= 400 ? action.day : undefined;
+    const kind: MessageKind = verse ? 'verse' : action.kind === 'verse' || (action.kind === 'share' && !day) ? 'note' : action.kind;
+    const extra: Partial<CircleMessage> = {};
+    if (kind === 'share') extra.day = day;
+    if (verse) extra.verse = verse;
+    if (action.replyToId && circleMessages.some((x) => x.id === action.replyToId && x.circleId === chatId)) extra.replyToId = action.replyToId;
+    const members = chatMemberIds(state, chatId);
+    const mentions = [...new Set(action.mentions ?? [])].filter((id) => id !== meId && members.includes(id));
+    if (mentions.length) extra.mentions = mentions;
+    return newMessage(chatId, meId, kind, text, extra);
+  }
+
   const m = mine();
   const circle = m && circles.find((c) => c.id === m.circleId);
   if (!m || !circle) return state;
@@ -109,10 +196,7 @@ export function circleReducer(state: AppState, action: CircleAction, meId: strin
       if (!m.reads.some((r) => r.day === action.day)) m.reads.push({ day: action.day, date: action.today });
       const share = action.share.trim().slice(0, MAX_MESSAGE);
       if (share) {
-        circleMessages.push({
-          id: uid('cm'), circleId: circle.id, userId: meId, kind: 'share', day: action.day, text: share,
-          createdAt: new Date().toISOString(), prayers: [], flagged: mentionsCrisis(share), reports: [],
-        });
+        circleMessages.push(newMessage(circle.id, meId, 'share', share, { day: action.day }));
       }
       if (!m.finishedOn && nextDay(m.reads, plan.days.length) === null) {
         m.finishedOn = action.today;
@@ -122,22 +206,10 @@ export function circleReducer(state: AppState, action: CircleAction, meId: strin
     }
 
     case 'circleMessage': {
-      const text = action.text.trim().slice(0, MAX_MESSAGE);
-      if (!text) return state;
-      circleMessages.push({
-        id: uid('cm'), circleId: circle.id, userId: meId, kind: action.kind, text,
-        createdAt: new Date().toISOString(), prayers: [], flagged: mentionsCrisis(text), reports: [],
-      });
-      return done();
-    }
-
-    case 'circlePray':
-    case 'circleReport': {
-      const msg = circleMessages.find((x) => x.id === action.messageId && x.circleId === circle.id);
+      if (action.chatId && action.chatId !== circle.id) return state;
+      const msg = composeMessage(circle.id);
       if (!msg) return state;
-      if (action.type === 'circleReport') {
-        if (!msg.reports.includes(meId)) msg.reports.push(meId);
-      } else msg.prayers = msg.prayers.includes(meId) ? msg.prayers.filter((id) => id !== meId) : [...msg.prayers, meId];
+      circleMessages.push(msg);
       return done();
     }
 

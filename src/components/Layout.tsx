@@ -4,6 +4,7 @@ import { localDate } from '../circles/dates';
 import { planById } from '../circles/plans';
 import { nextDay, readOn } from '../circles/progress';
 import { navigate } from '../router';
+import { unreadTotal } from '../circles/chat';
 import { useStore } from '../store';
 import type { ThemeChoice } from '../types';
 import { Avatar, TraditionTag } from './Avatar';
@@ -32,11 +33,12 @@ export function Layout({ children, active }: { children: ReactNode; active: stri
   useEffect(() => setDrawerOpen(false), [active]);
   const lastSeen = state.lastSeenNotifications[me.id] ?? '';
   const unread = myNotifications.filter((n) => n.createdAt > lastSeen).length;
+  const unreadChats = useMemo(() => unreadTotal(state, me.id), [state, me.id]);
 
   const nav = [
     { key: 'home', label: 'Home', href: '#/home', Icon: HomeIcon },
     { key: 'explore', label: 'Explore', href: '#/explore', Icon: SearchIcon },
-    { key: 'circles', label: 'Circles', href: '#/circles', Icon: CirclesIcon },
+    { key: 'circles', label: 'Circles', href: '#/circles', Icon: CirclesIcon, badge: unreadChats },
     { key: 'notifications', label: 'Notifications', href: '#/notifications', Icon: BellIcon, badge: unread },
     { key: 'journal', label: 'Journal', href: '#/journal', Icon: JournalIcon },
     { key: 'profile', label: 'Profile', href: `#/${me.handle}`, Icon: UserIcon },
@@ -216,14 +218,14 @@ function CircleCard() {
       <section className="card circle-card">
         <h2>Reading Circles</h2>
         <p className="small muted">Read a few minutes a day with 6–8 people on the same plan. Grace days, not broken streaks.</p>
-        <a className="btn btn-outline btn-sm" href="#/circles">Find a circle</a>
+        <a className="btn btn-outline btn-sm" href="#/circles/join">Find a circle</a>
       </section>
     );
   return (
     <section className="card circle-card">
       <h2>{myCircle.circle.name}</h2>
       <CircleTodayLine />
-      <a className="btn btn-outline btn-sm" href="#/circles">Open circle</a>
+      <a className="btn btn-outline btn-sm" href="#/circles/mine">Open chat</a>
     </section>
   );
 }

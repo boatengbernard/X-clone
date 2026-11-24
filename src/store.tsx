@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useReducer, type ReactNode } from 'react';
+import { chatList } from './circles/chat';
 import { circleReducer, circleViewFor, isCircleAction, type CircleAction } from './circles/reducer';
 import { sampleCircles } from './circles/seed';
 import { createSeedState } from './data/seed';
@@ -234,6 +235,9 @@ export function useStore() {
     myNotifications: me ? state.notifications.filter((n) => n.targetUserId === me.id) : [],
     /** The signed-in member's Reading Circle, or null when they are not in one. */
     myCircle: me ? circleViewFor(state, me.id) : null,
+    /** The signed-in member's circle chats, private chats and past circles. */
+    myChats: me ? chatList(state, me.id) : [],
+    savedMessages: me ? (state.savedMessages?.[me.id] ?? []) : [],
     hasDevotion: (userId: string) => Object.values(state.posts).some((p) => p.authorId === userId && p.kind === 'devotion' && !p.replyToId),
   };
 }

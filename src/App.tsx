@@ -37,7 +37,7 @@ export default function App() {
       active = 'notifications';
       break;
     case 'circles':
-      page = <Circles />;
+      page = <Circles path={segments.slice(1)} params={params} />;
       active = 'circles';
       break;
     case 'journal':
