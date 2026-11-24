@@ -1,0 +1,504 @@
+<title>Circle Group Chat</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: intro, then six numbered screens in the order a member meets them. Each row is a phone mock (left) and its notes (right); stacks on phones. Selah's own palette and type, WhatsApp's group-chat patterns. */
+:root {
+  --ground: #ece5d6;
+  --bg: #f6f1e7;
+  --card: #fffdf8;
+  --fg: #1f2a3c;
+  --mut: #5d6677;
+  --line: #d9d0bd;
+  --gold: #a67c2e;
+  --gold-soft: rgba(166, 124, 46, 0.13);
+  --navy: #1f2a3c;
+  --on-navy: #f6f1e7;
+  --pray: #b5603b;
+  --share: #2f6f5e;
+  --danger: #b5473b;
+  --frame: #1f2a3c;
+  --wall: #efe8d9;
+  --wall-dot: rgba(166, 124, 46, 0.09);
+  --mine: #e9dcbc;
+  --mine-fg: #1f2a3c;
+  --theirs: #fffdf8;
+  --tick: #2f6f5e;
+  --shade: rgba(20, 26, 38, 0.38);
+  --n1: #2f6f5e; --n2: #8a4f9e; --n3: #b5603b; --n4: #2f5e8f;
+  --serif: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --ground: #10151f; --bg: #141a26; --card: #1c2433; --fg: #f2ede2; --mut: #a8afbd; --line: #2f3a50;
+  --gold: #d9b26a; --gold-soft: rgba(217, 178, 106, 0.15); --navy: #d9b26a; --on-navy: #141a26;
+  --pray: #e39a72; --share: #6cc3a5; --danger: #e07a6e; --frame: #05080d;
+  --wall: #111722; --wall-dot: rgba(217, 178, 106, 0.06); --mine: #3a3424; --mine-fg: #f2ede2; --theirs: #1f2839; --tick: #6cc3a5;
+  --shade: rgba(0, 0, 0, 0.55); --n1: #6cc3a5; --n2: #c99be0; --n3: #e39a72; --n4: #8fb6e6; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --ground: #10151f; --bg: #141a26; --card: #1c2433; --fg: #f2ede2; --mut: #a8afbd; --line: #2f3a50;
+  --gold: #d9b26a; --gold-soft: rgba(217, 178, 106, 0.15); --navy: #d9b26a; --on-navy: #141a26;
+  --pray: #e39a72; --share: #6cc3a5; --danger: #e07a6e; --frame: #05080d;
+  --wall: #111722; --wall-dot: rgba(217, 178, 106, 0.06); --mine: #3a3424; --mine-fg: #f2ede2; --theirs: #1f2839; --tick: #6cc3a5;
+  --shade: rgba(0, 0, 0, 0.55); --n1: #6cc3a5; --n2: #c99be0; --n3: #e39a72; --n4: #8fb6e6; color-scheme: dark }
+
+* { box-sizing: border-box }
+body { background: var(--ground); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+.wrap { max-width: 1080px; margin: 0 auto; padding-block: 44px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 52px; }
+h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
+p { margin: 0 }
+.eyebrow { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
+.intro { display: grid; gap: 12px; max-width: 720px; }
+.intro h1 { font-family: var(--serif); font-size: clamp(34px, 5.4vw, 52px); line-height: 1.04; }
+.lede { font-size: 17px; color: var(--mut); max-width: 62ch; }
+
+.step { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 36px; align-items: start; }
+.notes { display: grid; gap: 14px; min-width: 0; padding-top: 6px; }
+.head { display: flex; align-items: baseline; gap: 14px; }
+.num { font-family: var(--serif); font-size: 44px; line-height: .9; color: var(--gold); font-variant-numeric: tabular-nums; }
+.head h2 { font-family: var(--serif); font-size: 30px; line-height: 1.1; }
+.summary { font-size: 17px; max-width: 58ch; }
+.notes ul { margin: 0; padding-left: 18px; display: grid; gap: 6px; max-width: 62ch; }
+.from { font-size: 13px; color: var(--mut); border-left: 2px solid var(--line); padding-left: 12px; max-width: 60ch; }
+.from b { color: var(--fg); font-weight: 600; }
+
+/* Phone */
+.phone { width: 100%; max-width: 300px; background: var(--frame); border-radius: 34px; padding: 10px; box-shadow: 0 18px 40px -24px rgba(20, 26, 38, .5); }
+.screen { background: var(--bg); border-radius: 25px; overflow: hidden; position: relative; height: 560px; display: flex; flex-direction: column; font-size: 13px; }
+.topbar { display: flex; align-items: center; gap: 10px; padding: 12px 12px 10px; background: var(--card); border-bottom: 1px solid var(--line); }
+.topbar .t { min-width: 0; flex: 1; line-height: 1.25; }
+.topbar .t b { display: block; font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar .t span { font-size: 11px; color: var(--mut); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.topbar .t span.typing { color: var(--share); }
+.ico { width: 20px; height: 20px; color: var(--mut); flex-shrink: 0; }
+.ico.fg { color: var(--fg); }
+.av { width: 34px; height: 34px; border-radius: 50%; background: var(--gold); color: #fffdf8; display: grid; place-items: center; font-size: 12px; font-weight: 600; flex-shrink: 0; }
+.av.s { width: 26px; height: 26px; font-size: 10px; }
+.av.circle { background: var(--navy); color: var(--on-navy); font-family: var(--serif); font-style: italic; font-size: 15px; }
+.c1 { background: #2f6f5e } .c2 { background: #8a4f9e } .c3 { background: #b5603b } .c4 { background: #2f5e8f } .c5 { background: #6b7280 }
+
+/* 1: chat list */
+.title { display: flex; justify-content: space-between; align-items: center; padding: 14px 14px 6px; }
+.title h3 { font-family: var(--serif); font-size: 22px; }
+.search { margin: 4px 12px 8px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; display: flex; gap: 8px; align-items: center; color: var(--mut); font-size: 12px; }
+.chips { display: flex; gap: 6px; padding: 0 12px 8px; }
+.chip { font-size: 11.5px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--mut); }
+.chip.on { background: var(--gold-soft); color: var(--gold); border-color: transparent; font-weight: 600; }
+.thread { display: grid; grid-template-columns: 42px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 12px; }
+.thread .av { width: 42px; height: 42px; }
+.thread + .thread { border-top: 1px solid var(--line); }
+.thread .nm { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thread .pv { color: var(--mut); font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thread .pv b { color: var(--fg); font-weight: 500; }
+.meta { display: grid; justify-items: end; gap: 4px; font-size: 10.5px; color: var(--mut); }
+.meta.new { color: var(--gold); font-weight: 600; }
+.unread { min-width: 18px; height: 18px; border-radius: 9px; background: var(--gold); color: #fffdf8; font-size: 10.5px; font-weight: 700; display: grid; place-items: center; padding: 0 5px; }
+.pin { width: 12px; height: 12px; color: var(--mut); }
+.sect { font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--mut); font-weight: 600; padding: 10px 14px 2px; }
+.fab { position: absolute; right: 14px; bottom: 14px; width: 46px; height: 46px; border-radius: 14px; background: var(--navy); color: var(--on-navy); display: grid; place-items: center; }
+
+/* Chat */
+.wall { flex: 1; min-height: 0; background-color: var(--wall); background-image: radial-gradient(var(--wall-dot) 1.2px, transparent 1.3px); background-size: 14px 14px; padding: 8px 10px; display: flex; flex-direction: column; gap: 5px; overflow: hidden; position: relative; }
+.pinbar { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--card); border-bottom: 1px solid var(--line); }
+.pinbar .t { flex: 1; min-width: 0; line-height: 1.25; }
+.pinbar .t small { display: block; font-size: 10px; color: var(--gold); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+.pinbar .t b { font-family: var(--serif); font-size: 14px; font-weight: 600; }
+.pinbar .go { font-size: 11.5px; font-weight: 600; padding: 4px 11px; border-radius: 999px; background: var(--navy); color: var(--on-navy); white-space: nowrap; }
+.day { align-self: center; font-size: 10.5px; font-weight: 600; color: var(--mut); background: var(--card); border-radius: 8px; padding: 2px 9px; margin: 4px 0; letter-spacing: .04em; }
+.sys { align-self: center; font-size: 11px; color: var(--share); background: var(--card); border-radius: 8px; padding: 3px 10px; text-align: center; max-width: 88%; }
+.b { max-width: 82%; padding: 6px 9px 4px; border-radius: 10px; line-height: 1.38; position: relative; box-shadow: 0 1px 0 rgba(0,0,0,.06); }
+.b.in { background: var(--theirs); align-self: flex-start; border-top-left-radius: 3px; }
+.b.out { background: var(--mine); color: var(--mine-fg); align-self: flex-end; border-top-right-radius: 3px; }
+.b.cont { border-radius: 10px; }
+.b .who { font-size: 11px; font-weight: 600; display: block; }
+.who.n1 { color: var(--n1) } .who.n2 { color: var(--n2) } .who.n3 { color: var(--n3) } .who.n4 { color: var(--n4) }
+.b .tm { float: right; font-size: 9.5px; color: var(--mut); margin: 6px 0 -2px 8px; display: inline-flex; gap: 3px; align-items: center; }
+.b .tm svg { width: 15px; height: 10px; color: var(--tick); }
+.tag { display: inline-block; font-size: 9.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--pray); margin-bottom: 1px; }
+.tag.day12 { color: var(--gold); }
+.prays { display: inline-flex; gap: 4px; align-items: center; margin-top: 4px; font-size: 10.5px; color: var(--pray); background: rgba(181, 96, 59, .1); border-radius: 999px; padding: 1px 8px; }
+.react { position: absolute; bottom: -9px; left: 8px; background: var(--card); border: 1px solid var(--line); border-radius: 999px; font-size: 10px; padding: 0 5px; line-height: 16px; }
+.b.has-react { margin-bottom: 8px; }
+.quote { border-left: 3px solid var(--n2); background: rgba(0,0,0,.05); border-radius: 5px; padding: 3px 7px; margin-bottom: 3px; font-size: 11px; }
+.quote b { color: var(--n2); font-weight: 600; display: block; }
+.quote span { color: var(--mut); }
+.vcard { border-radius: 8px; overflow: hidden; border: 1px solid var(--line); background: var(--bg); margin-bottom: 3px; }
+.vcard .vhead { background: var(--navy); color: var(--on-navy); font-size: 9.5px; letter-spacing: .12em; font-weight: 600; padding: 4px 8px; }
+.vcard p { font-family: var(--serif); font-style: italic; font-size: 13px; padding: 6px 8px; line-height: 1.32; }
+.typingb { align-self: flex-start; background: var(--theirs); border-radius: 10px; border-top-left-radius: 3px; padding: 8px 10px; display: inline-flex; gap: 4px; }
+.typingb i { width: 6px; height: 6px; border-radius: 50%; background: var(--mut); opacity: .55; }
+.typingb i:nth-child(2) { opacity: .8 } .typingb i:nth-child(3) { opacity: 1 }
+
+.compose { display: flex; gap: 6px; align-items: flex-end; padding: 7px 8px 9px; background: var(--bg); }
+.field { flex: 1; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 7px 10px; display: flex; gap: 8px; align-items: center; color: var(--mut); font-size: 12.5px; min-width: 0; }
+.field .txt { flex: 1; min-width: 0; color: var(--fg); }
+.field .ph { flex: 1; min-width: 0; }
+.send { width: 36px; height: 36px; border-radius: 50%; background: var(--navy); color: var(--on-navy); display: grid; place-items: center; flex-shrink: 0; }
+.send svg { width: 17px; height: 17px; }
+.replybar { margin: 0 8px; background: var(--card); border-radius: 12px 12px 0 0; padding: 6px 8px 0; }
+
+/* Sheets and overlays */
+.shade { position: absolute; inset: 0; background: var(--shade); }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; background: var(--card); border-radius: 18px 18px 0 0; padding: 10px 14px 16px; }
+.grab { width: 36px; height: 4px; border-radius: 2px; background: var(--line); margin: 0 auto 10px; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 6px; }
+.tile { display: grid; justify-items: center; gap: 5px; font-size: 11px; text-align: center; line-height: 1.2; }
+.tile .disc { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; color: #fffdf8; }
+.tile .disc svg { width: 21px; height: 21px; }
+.tile.later { opacity: .45; }
+.d1 { background: #a67c2e } .d2 { background: #b5603b } .d3 { background: #2f6f5e } .d4 { background: #2f5e8f } .d5 { background: #8a4f9e } .d6 { background: #6b7280 }
+.lift { position: absolute; left: 10px; right: 10px; }
+.reacts { display: flex; justify-content: space-between; background: var(--card); border-radius: 999px; padding: 5px 10px; font-size: 19px; box-shadow: 0 8px 20px -8px rgba(0,0,0,.35); width: fit-content; gap: 10px; }
+.reacts span { display: grid; justify-items: center; font-size: 19px; line-height: 1.1; }
+.reacts small { font-size: 8.5px; color: var(--mut); font-family: var(--sans); }
+.menu { background: var(--card); border-radius: 12px; overflow: hidden; box-shadow: 0 10px 26px -10px rgba(0,0,0,.4); width: 190px; margin-left: auto; }
+.menu div { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; font-size: 12.5px; border-top: 1px solid var(--line); }
+.menu div:first-child { border-top: 0; }
+.menu svg { width: 16px; height: 16px; color: var(--mut); }
+.menu .warn, .menu .warn svg { color: var(--danger); }
+.help { background: var(--card); border: 1px solid var(--pray); border-radius: 12px; padding: 9px 11px; display: grid; gap: 5px; font-size: 11.5px; margin: 0 8px 6px; }
+.help b { font-size: 12.5px; }
+.help .num-line { font-weight: 600; color: var(--pray); }
+
+/* Group info */
+.info { flex: 1; overflow: hidden; background: var(--bg); }
+.hero { display: grid; justify-items: center; gap: 4px; padding: 16px 12px 12px; background: var(--card); text-align: center; }
+.hero .av { width: 62px; height: 62px; font-size: 26px; }
+.hero h4 { margin: 4px 0 0; font-family: var(--serif); font-size: 18px; }
+.hero p { font-size: 11.5px; color: var(--mut); }
+.box { background: var(--card); margin-top: 8px; }
+.box .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 14px; font-size: 12.5px; border-top: 1px solid var(--line); gap: 8px; }
+.box .row:first-child { border-top: 0; }
+.box .row span:last-child { color: var(--mut); font-size: 11.5px; }
+.mem { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 9px; align-items: center; padding: 6px 14px; font-size: 12.5px; }
+.mem .av { width: 28px; height: 28px; font-size: 10px; }
+.mem small { display: block; font-size: 10.5px; color: var(--mut); }
+.dots { display: flex; gap: 3px; }
+.dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.dots i.r { background: var(--share); }
+.dots i.g { background: var(--gold); opacity: .6; }
+.guide { font-size: 9px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); border: 1px solid var(--gold); border-radius: 999px; padding: 0 5px; margin-left: 4px; }
+.red { color: var(--danger) !important; }
+
+.questions { border-top: 1px solid var(--line); padding-top: 28px; display: grid; gap: 14px; max-width: 760px; }
+.questions h2 { font-family: var(--serif); font-size: 30px; }
+.questions ol { margin: 0; padding-left: 20px; display: grid; gap: 10px; }
+.questions li b { font-weight: 600; }
+.carry { display: grid; gap: 8px; max-width: 760px; }
+.carry h2 { font-family: var(--serif); font-size: 24px; }
+.carry ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; color: var(--mut); }
+.carry li b { color: var(--fg); font-weight: 600; }
+
+@media (max-width: 760px) {
+  .step { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .phone { margin: 0 auto; }
+  .head h2 { font-size: 26px; }
+}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5M8 3h8l-1 6 3 4H6l3-4z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-smile" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5h.01M15 9.5h.01"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="currentColor"><path d="M3 20.5l18-8.5L3 3.5l2.5 8.5zM5.5 12H13" /></symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+    <symbol id="i-ticks" viewBox="0 0 22 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 7.5l3.5 3.5 7-8M9 11l7-8M8.2 10.3l.8.7"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5zM4 20.5A1.5 1.5 0 0 0 5.5 22H20"/></symbol>
+    <symbol id="i-candle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1.6 1.8 2 3 2 4a2 2 0 0 1-4 0c0-1 .4-2.2 2-4z"/><rect x="8.5" y="11" width="7" height="10" rx="1"/></symbol>
+    <symbol id="i-quote" viewBox="0 0 24 24" fill="currentColor"><path d="M4 17h5l2-5V6H5v6h3zM13 17h5l2-5V6h-6v6h3z"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></symbol>
+    <symbol id="i-image" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></symbol>
+    <symbol id="i-reply" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 0 1 6 6v5"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="i-journal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 3v18M12.5 8H16M12.5 12H16"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h11l-2 4 2 4H5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5h.01"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 21h4"/></symbol>
+  </defs>
+</svg>
+
+<main class="wrap">
+  <header class="intro">
+    <p class="eyebrow">Selah · Reading Circles · storyboard</p>
+    <h1>Your circle, as a group chat</h1>
+    <p class="lede">Today a circle is one long page: the week, today's reading, a post box and a list of messages underneath. This turns the talking part into a group chat that works the way WhatsApp groups do (chat list, bubbles, replies, reactions, typing, "seen by"), while the reading stays pinned at the top so the chat never buries it. It uses the messaging component you sent as the base, rebuilt inside Selah and changed from one-to-one chats to groups.</p>
+  </header>
+
+  <!-- 1 -->
+  <article class="step" aria-labelledby="s1">
+    <div class="phone" role="img" aria-label="Circles tab showing a list of chats">
+      <div class="screen">
+        <div class="title"><h3>Circles</h3><svg class="ico fg"><use href="#i-more"/></svg></div>
+        <div class="search"><svg class="ico" style="width:14px;height:14px"><use href="#i-search"/></svg>Search messages</div>
+        <div class="chips"><span class="chip on">All</span><span class="chip">Unread 3</span><span class="chip">Prayer</span></div>
+        <div class="thread">
+          <div class="av circle">M</div>
+          <div style="min-width:0"><div class="nm">Morning Psalms</div><div class="pv"><b>Kofi:</b> Day 12 done. Verse 4 got me today</div></div>
+          <div class="meta new">7:42<span class="unread">3</span></div>
+        </div>
+        <div class="thread">
+          <div class="av c4">EA</div>
+          <div style="min-width:0"><div class="nm">Esi Asante <span class="guide">Guide</span></div><div class="pv">Praying for your interview tomorrow</div></div>
+          <div class="meta">Yesterday<svg class="pin"><use href="#i-pin"/></svg></div>
+        </div>
+        <div class="sect">Finished</div>
+        <div class="thread" style="opacity:.75">
+          <div class="av circle" style="background:var(--mut)">R</div>
+          <div style="min-width:0"><div class="nm">Romans in 30 Days</div><div class="pv">You: Thank you all. What a month</div></div>
+          <div class="meta">Oct 30</div>
+        </div>
+        <div class="fab" aria-hidden="true"><svg class="ico" style="color:inherit"><use href="#i-plus"/></svg></div>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="head"><span class="num">1</span><h2 id="s1">Circles becomes a chat list</h2></div>
+      <p class="summary">The Circles tab opens on your chats, like WhatsApp's Chats screen. Your current circle sits at the top with its unread count.</p>
+      <ul>
+        <li>Each row shows the last message with the sender's name, the time, and a gold unread badge.</li>
+        <li>Search and the All / Unread / Prayer filters come from your component. "Prayer" replaces its "Pinned" filter and shows only prayer requests.</li>
+        <li>Finished circles move to a quieter "Finished" section so you can still scroll back through them.</li>
+        <li>The + button starts a private chat with someone in your circle, such as your guide.</li>
+      </ul>
+      <p class="from"><b>From your component:</b> thread list, unread badges, pin icon, search, filter chips, new-conversation button.</p>
+    </div>
+  </article>
+
+  <!-- 2 -->
+  <article class="step" aria-labelledby="s2">
+    <div class="phone" role="img" aria-label="Group chat with pinned reading and message bubbles">
+      <div class="screen">
+        <div class="topbar">
+          <svg class="ico fg"><use href="#i-back"/></svg>
+          <div class="av circle s" style="width:32px;height:32px">M</div>
+          <div class="t"><b>Morning Psalms</b><span>Kofi, Ama, Esi, Yaw, Nana, You</span></div>
+          <svg class="ico fg"><use href="#i-more"/></svg>
+        </div>
+        <div class="pinbar">
+          <svg class="ico" style="color:var(--gold)"><use href="#i-book"/></svg>
+          <div class="t"><small>Today · Day 12 of 30</small><b>Psalm 23</b></div>
+          <span class="go">Read</span>
+        </div>
+        <div class="wall">
+          <span class="day">TODAY</span>
+          <span class="sys">Kofi and Ama finished Day 12 · 4 of 6 have read</span>
+          <div class="b in"><span class="who n1">Kofi Mensah</span><span class="tag day12">Day 12</span><br>"He restores my soul." Needed that one this morning.<span class="tm">7:12</span></div>
+          <div class="b in has-react"><span class="who n2">Ama Owusu</span><span class="tag">Prayer request</span><br>My mum goes in for surgery on Thursday. Please pray it goes smoothly.<span class="tm">7:30</span><br><span class="prays">Praying · 4</span><span class="react">🙏 4</span></div>
+          <div class="b out">Praying for her, Ama. Thursday morning I'll read this one for her.<span class="tm">7:41<svg><use href="#i-ticks"/></svg></span></div>
+          <div class="b in"><span class="who n3">Yaw Boateng</span>Verse 4 got me today, the valley part<span class="tm">7:42</span></div>
+        </div>
+        <div class="compose">
+          <div class="field"><svg class="ico"><use href="#i-plus"/></svg><span class="ph">Message your circle</span><svg class="ico"><use href="#i-smile"/></svg></div>
+          <div class="send"><svg><use href="#i-mic"/></svg></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="head"><span class="num">2</span><h2 id="s2">The group chat, with today's reading pinned</h2></div>
+      <p class="summary">Opening the circle drops you into the conversation. Today's reading is pinned under the header, like a pinned message in WhatsApp, so it is always one tap away.</p>
+      <ul>
+        <li>Your messages sit on the right in a warm gold bubble. Everyone else's are on the left with their name in their own colour, as in a WhatsApp group.</li>
+        <li>A date divider ("TODAY") and small centred notes for events: "Kofi and Ama finished Day 12 · 4 of 6 have read". These replace today's week card.</li>
+        <li>When you finish a reading, the one line you share arrives as a bubble labelled "Day 12".</li>
+        <li>Prayer requests are labelled bubbles with a "Praying · 4" count. Tapping it adds you, as the Pray button does today.</li>
+        <li>Two ticks on your own messages turn green when everyone has seen them.</li>
+      </ul>
+      <p class="from"><b>From your component:</b> chat header, bubbles, date dividers, delivery ticks (sent, delivered, read).</p>
+    </div>
+  </article>
+
+  <!-- 3 -->
+  <article class="step" aria-labelledby="s3">
+    <div class="phone" role="img" aria-label="Attach sheet with share options, and someone typing">
+      <div class="screen">
+        <div class="topbar">
+          <svg class="ico fg"><use href="#i-back"/></svg>
+          <div class="av circle s" style="width:32px;height:32px">M</div>
+          <div class="t"><b>Morning Psalms</b><span class="typing">Esi is typing…</span></div>
+          <svg class="ico fg"><use href="#i-more"/></svg>
+        </div>
+        <div class="wall">
+          <div class="b in"><span class="who n3">Yaw Boateng</span>Verse 4 got me today, the valley part<span class="tm">7:42</span></div>
+          <div class="typingb" aria-hidden="true"><i></i><i></i><i></i></div>
+        </div>
+        <div class="shade"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="grid">
+            <div class="tile"><span class="disc d1"><svg><use href="#i-book"/></svg></span>Today's reading</div>
+            <div class="tile"><span class="disc d2"><svg><use href="#i-candle"/></svg></span>Prayer request</div>
+            <div class="tile"><span class="disc d3"><svg><use href="#i-quote"/></svg></span>Verse</div>
+            <div class="tile"><span class="disc d4"><svg><use href="#i-heart"/></svg></span>Encourage someone</div>
+            <div class="tile later"><span class="disc d5"><svg><use href="#i-image"/></svg></span>Photo<br><small>later</small></div>
+            <div class="tile later"><span class="disc d6"><svg><use href="#i-mic"/></svg></span>Voice note<br><small>later</small></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="head"><span class="num">3</span><h2 id="s3">The + button: what you can send</h2></div>
+      <p class="summary">Typing a message is the normal case. The + in the message box opens WhatsApp's attach sheet, filled with Selah's own kinds of message.</p>
+      <ul>
+        <li><b>Today's reading</b> shares the day's passage and your one line, the same as finishing a reading today.</li>
+        <li><b>Prayer request</b> sends a labelled bubble others can mark "Praying".</li>
+        <li><b>Verse</b> opens the Bible picker and drops in a verse card, in the translation you read.</li>
+        <li><b>Encourage someone</b> lets you pick a member. They're mentioned by name, which replaces the guide's "Encourage" button.</li>
+        <li>Photos and voice notes are shown greyed out as "later". They need storage and moderation that Selah doesn't have yet.</li>
+        <li>"Esi is typing…" shows in the header and as three dots in the chat.</li>
+      </ul>
+      <p class="from"><b>From your component:</b> typing indicator, auto-growing message box, send button that swaps in when you type.</p>
+    </div>
+  </article>
+
+  <!-- 4 -->
+  <article class="step" aria-labelledby="s4">
+    <div class="phone" role="img" aria-label="Long-press menu on a message with reactions">
+      <div class="screen">
+        <div class="topbar">
+          <svg class="ico fg"><use href="#i-back"/></svg>
+          <div class="av circle s" style="width:32px;height:32px">M</div>
+          <div class="t"><b>Morning Psalms</b><span>Kofi, Ama, Esi, Yaw, Nana, You</span></div>
+          <svg class="ico fg"><use href="#i-more"/></svg>
+        </div>
+        <div class="wall">
+          <div class="b in"><span class="who n1">Kofi Mensah</span><span class="tag day12">Day 12</span><br>"He restores my soul." Needed that one this morning.<span class="tm">7:12</span></div>
+        </div>
+        <div class="shade"></div>
+        <div class="lift" style="top:86px">
+          <div class="reacts" aria-label="Reactions">
+            <span>🙏<small>Praying</small></span><span>🙌<small>Amen</small></span><span>❤️<small>Love</small></span><span>😢<small>With you</small></span><span>✝️<small>Glory</small></span>
+          </div>
+        </div>
+        <div class="lift" style="top:146px">
+          <div class="b in" style="max-width:82%"><span class="who n2">Ama Owusu</span><span class="tag">Prayer request</span><br>My mum goes in for surgery on Thursday. Please pray it goes smoothly.<span class="tm">7:30</span></div>
+        </div>
+        <div class="lift" style="top:252px">
+          <div class="menu">
+            <div>Reply<svg><use href="#i-reply"/></svg></div>
+            <div>Pray for this<svg><use href="#i-candle"/></svg></div>
+            <div>Save to Journal<svg><use href="#i-journal"/></svg></div>
+            <div>Copy<svg><use href="#i-copy"/></svg></div>
+            <div>Seen by 5<svg><use href="#i-info"/></svg></div>
+            <div class="warn">Report<svg><use href="#i-flag"/></svg></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="head"><span class="num">4</span><h2 id="s4">Press and hold: react, reply, pray</h2></div>
+      <p class="summary">Pressing and holding a message lifts it and dims the rest of the chat, as in WhatsApp. A row of reactions sits above it and a menu below.</p>
+      <ul>
+        <li>The five reactions are chosen for a Bible group: Praying, Amen, Love, With you, Glory. Each one shows a small label, so nobody has to guess what an emoji means.</li>
+        <li><b>Reply</b> quotes the message inside your answer, which keeps a busy group readable (see screen 5).</li>
+        <li><b>Save to Journal</b> keeps the message in your private Journal, next to your saved posts.</li>
+        <li><b>Seen by</b> lists who has read it. <b>Report</b> works as it does today, and reported messages still go to the guide.</li>
+        <li>On a computer, the same menu opens from a small arrow that appears when you hover over a message.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 5 -->
+  <article class="step" aria-labelledby="s5">
+    <div class="phone" role="img" aria-label="Reply with a quote and a verse card, and the crisis help card">
+      <div class="screen">
+        <div class="topbar">
+          <svg class="ico fg"><use href="#i-back"/></svg>
+          <div class="av circle s" style="width:32px;height:32px">M</div>
+          <div class="t"><b>Morning Psalms</b><span>Kofi, Ama, Esi, Yaw, Nana, You</span></div>
+          <svg class="ico fg"><use href="#i-more"/></svg>
+        </div>
+        <div class="wall">
+          <div class="b out"><div class="quote"><b>Ama Owusu</b><span>My mum goes in for surgery on Thursday…</span></div>Holding this one up for her:<span class="tm">8:02<svg><use href="#i-ticks"/></svg></span></div>
+          <div class="b out" style="max-width:86%"><div class="vcard"><div class="vhead">ISAIAH 41:10 · NIV</div><p>"So do not fear, for I am with you; do not be dismayed, for I am your God."</p></div><span class="tm">8:02<svg><use href="#i-ticks"/></svg></span></div>
+          <div class="b in has-react"><span class="who n2">Ama Owusu</span>Thank you, this means a lot<span class="tm">8:05</span><span class="react">❤️ 🙏 3</span></div>
+        </div>
+        <div class="help" role="note">
+          <b>You don't have to carry this alone</b>
+          <span>If you might hurt yourself, please reach out now. Your guide has been told privately.</span>
+          <span class="num-line">Call or text 988 · Find a helpline</span>
+        </div>
+        <div class="compose">
+          <div class="field"><svg class="ico"><use href="#i-plus"/></svg><span class="txt">honestly I don't want to be here anymore</span></div>
+          <div class="send"><svg><use href="#i-send"/></svg></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="head"><span class="num">5</span><h2 id="s5">Replies, verse cards and keeping people safe</h2></div>
+      <p class="summary">A reply carries a quote of the message it answers, with the original sender's name in their colour. Verses arrive as cards rather than pasted text.</p>
+      <ul>
+        <li>Tapping a quote scrolls back to the original message and highlights it for a moment.</li>
+        <li>The safety check you already have moves into the message box. If someone types words about self-harm, a help card appears above the box before they send. The guide is still alerted privately, as now.</li>
+        <li>Reactions gather in a small pill on the corner of the bubble. Tapping it shows who reacted.</li>
+      </ul>
+    </div>
+  </article>
+
+  <!-- 6 -->
+  <article class="step" aria-labelledby="s6">
+    <div class="phone" role="img" aria-label="Group info screen with members and their week">
+      <div class="screen">
+        <div class="topbar">
+          <svg class="ico fg"><use href="#i-back"/></svg>
+          <div class="t"><b>Group info</b></div>
+        </div>
+        <div class="info">
+          <div class="hero">
+            <div class="av circle">M</div>
+            <h4>Morning Psalms</h4>
+            <p>Psalms in 30 Days · Day 12 · 6 members</p>
+          </div>
+          <div class="box">
+            <div class="sect" style="padding:8px 14px 2px">This week</div>
+            <div class="mem"><div class="av c4">EA</div><div>Esi Asante <span class="guide">Guide</span><small>Read today</small></div><div class="dots"><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i><i class="r"></i></div></div>
+            <div class="mem"><div class="av c1">KM</div><div>Kofi Mensah<small>Read today</small></div><div class="dots"><i class="r"></i><i class="g"></i><i class="r"></i><i class="r"></i><i class="r"></i></div></div>
+            <div class="mem"><div class="av">AO</div><div>You<small>Read today</small></div><div class="dots"><i class="r"></i><i class="r"></i><i class="r"></i><i class="g"></i><i class="r"></i></div></div>
+            <div class="mem"><div class="av c5">NA</div><div>Nana Addo<small>Quiet for 3 days</small></div><div class="dots"><i class="r"></i><i class="r"></i><i></i><i></i><i></i></div></div>
+          </div>
+          <div class="box">
+            <div class="row"><span>Mute notifications</span><span>Off</span></div>
+            <div class="row"><span>Reading reminder</span><span>6:30 AM</span></div>
+            <div class="row"><span>Verses and prayers shared</span><span>24</span></div>
+            <div class="row"><span class="red">Leave circle</span><span></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="notes">
+      <div class="head"><span class="num">6</span><h2 id="s6">Group info: who's reading, and your settings</h2></div>
+      <p class="summary">Tapping the circle's name opens Group info, like WhatsApp's. Here, the member list shows each person's week of reading.</p>
+      <ul>
+        <li>Each member has five dots for the week: green for read, faded gold for a grace day, empty for not yet. These replace today's week card and progress bar.</li>
+        <li>The guide sees "Quiet for 3 days" under a member, and tapping that member offers "Send encouragement", which opens a private chat.</li>
+        <li>Mute, your reminder time, everything shared (verses and prayer requests) and Leave circle all live here, instead of at the bottom of the page.</li>
+        <li>The note that circle messages are private and never reach the public feed moves here too, and appears once at the top of every new chat.</li>
+      </ul>
+    </div>
+  </article>
+
+  <section class="carry">
+    <h2>What stays the same</h2>
+    <ul>
+      <li><b>Joining:</b> the join flow (pick a plan, your rhythm, reminder time) is unchanged. It ends by opening the new chat.</li>
+      <li><b>Reading:</b> tapping Read on the pinned bar opens today's reading screen exactly as now. "Done" sends your line to the chat.</li>
+      <li><b>Privacy and safety:</b> circle chats stay private, reports still go to the guide, crisis words still show help and alert the guide.</li>
+      <li><b>Data:</b> all of it stays on the phone the way the rest of Selah does today. Real-time chat between different people's phones needs a server, which is a separate step.</li>
+    </ul>
+  </section>
+
+  <section class="questions" aria-labelledby="q">
+    <h2 id="q">Questions for you</h2>
+    <ol>
+      <li><b>Private chats.</b> Should people be able to message one member privately (screen 1's guide chat), or only the whole group?</li>
+      <li><b>"Seen by" and ticks.</b> WhatsApp shows who has read a message. Is that welcome in a prayer group, or does it add pressure? It could be on for the guide only.</li>
+      <li><b>Reactions.</b> Are Praying, Amen, Love, With you and Glory the right five?</li>
+      <li><b>Where the week shows.</b> Should the week of dots be only in Group info (screen 6), or also as a thin strip under the pinned reading?</li>
+    </ol>
+  </section>
+</main>
