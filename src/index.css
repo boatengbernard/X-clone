@@ -1498,8 +1498,8 @@ a.user-name:hover {
 }
 
 /* ---------- Responsive ---------- */
-.bottom-nav,
-.fab {
+.fab,
+.drawer-root {
   display: none;
 }
 @media (max-width: 1260px) {
@@ -1599,41 +1599,129 @@ a.user-name:hover {
     overflow: hidden;
     clip: rect(0 0 0 0);
   }
-  .bottom-nav {
-    display: flex;
-    justify-content: space-around;
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: calc(56px + env(safe-area-inset-bottom, 0px));
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    padding-left: env(safe-area-inset-left, 0px);
-    padding-right: env(safe-area-inset-right, 0px);
-    background: var(--bg);
-    border-top: 1px solid var(--line);
-    z-index: 20;
-  }
-  .bottom-nav a {
+  /* Side menu that slides in from the left, opened from the avatar in the top bar. */
+  .mobile-top .wordmark {
     flex: 1;
-    display: grid;
-    place-items: center;
+    justify-content: center;
+  }
+  .drawer-toggle,
+  .mobile-top-spacer {
+    width: 40px;
+    flex-shrink: 0;
+  }
+  .drawer-toggle {
     position: relative;
-    color: var(--mut);
+    display: inline-flex;
+    padding: 0;
+    border-radius: 50%;
   }
-  .bottom-nav a.active {
+  .drawer-toggle .badge {
+    top: -3px;
+    right: -3px;
+  }
+  .drawer-root {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    pointer-events: none;
+    visibility: hidden;
+    transition: visibility 0s linear 0.25s;
+  }
+  .drawer-root.open {
+    pointer-events: auto;
+    visibility: visible;
+    transition: visibility 0s;
+  }
+  .drawer-backdrop {
+    position: absolute;
+    inset: 0;
+    background: var(--backdrop);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .drawer-root.open .drawer-backdrop {
+    opacity: 1;
+  }
+  .drawer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(300px, 82vw);
+    background: var(--bg);
+    border-right: 1px solid var(--line);
+    box-shadow: 0 0 40px -10px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: max(14px, env(safe-area-inset-top, 0px)) 0 max(14px, env(safe-area-inset-bottom, 0px)) env(safe-area-inset-left, 0px);
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+    outline: none;
+  }
+  .drawer-root.open .drawer {
+    transform: none;
+  }
+  .drawer-account {
+    padding: 0 18px 14px;
+    border-bottom: 1px solid var(--line);
+  }
+  .drawer-account-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+  }
+  .drawer-name {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+  }
+  .drawer-name strong {
+    font-size: 17px;
+  }
+  .drawer-counts {
+    display: flex;
+    gap: 16px;
+  }
+  .drawer-nav,
+  .drawer-foot {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+  }
+  .drawer-foot {
+    margin-top: auto;
+    border-top: 1px solid var(--line);
+  }
+  .drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding: 13px 20px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--fg);
+    text-align: left;
+    width: 100%;
+  }
+  .drawer-foot .drawer-item {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  .drawer-item:hover {
+    background: var(--hover);
+  }
+  .drawer-item.active .nav-icon {
     color: var(--gold);
-  }
-  .bottom-nav .badge {
-    top: 8px;
-    right: calc(50% - 20px);
   }
   .fab {
     display: grid;
     place-items: center;
     position: fixed;
     right: calc(16px + env(safe-area-inset-right, 0px));
-    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    bottom: calc(20px + env(safe-area-inset-bottom, 0px));
     width: 56px;
     height: 56px;
     border-radius: 50%;
