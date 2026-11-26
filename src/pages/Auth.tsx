@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EyeIcon, EyeOffIcon } from '../components/Icons';
 import { Wordmark } from '../components/Layout';
 import { navigate } from '../router';
 import { hashPassword, useStore } from '../store';
@@ -75,7 +76,7 @@ function SignUp() {
         <input id="su-email" type="email" value={form.email} onChange={set('email')} autoComplete="email" />
       </Field>
       <Field id="su-password" label="Password" error={errors.password}>
-        <input id="su-password" type="password" value={form.password} onChange={set('password')} autoComplete="new-password" />
+        <PasswordInput id="su-password" value={form.password} onChange={set('password')} autoComplete="new-password" />
       </Field>
       <Field id="su-tradition" label="How do you identify?" error={errors.tradition}>
         <select id="su-tradition" value={form.tradition} onChange={set('tradition')}>
@@ -130,7 +131,7 @@ function LogIn() {
         <input id="li-id" value={id} onChange={(e) => (setId(e.target.value), setError(''))} autoComplete="username" />
       </Field>
       <Field id="li-password" label="Password">
-        <input id="li-password" type="password" value={password} onChange={(e) => (setPassword(e.target.value), setError(''))} autoComplete="current-password" />
+        <PasswordInput id="li-password" value={password} onChange={(e) => (setPassword(e.target.value), setError(''))} autoComplete="current-password" />
       </Field>
       {error && (
         <p className="error" role="alert">
@@ -165,6 +166,35 @@ function Field({ id, label, error, children }: { id: string; label: string; erro
       <label htmlFor={id}>{label}</label>
       {children}
       {error && <span className="error">{error}</span>}
+    </div>
+  );
+}
+
+function PasswordInput({
+  id,
+  value,
+  onChange,
+  autoComplete,
+}: {
+  id: string;
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  autoComplete: string;
+}) {
+  const [shown, setShown] = useState(false);
+  return (
+    <div className="prefix-input password-input">
+      <input id={id} type={shown ? 'text' : 'password'} value={value} onChange={onChange} autoComplete={autoComplete} autoCapitalize="none" autoCorrect="off" spellCheck={false} />
+      <button
+        type="button"
+        className="password-toggle"
+        onClick={() => setShown((v) => !v)}
+        aria-label={shown ? 'Hide password' : 'Show password'}
+        aria-pressed={shown}
+        aria-controls={id}
+      >
+        {shown ? <EyeOffIcon width={20} height={20} /> : <EyeIcon width={20} height={20} />}
+      </button>
     </div>
   );
 }

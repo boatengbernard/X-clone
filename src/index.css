@@ -1447,6 +1447,30 @@ a.user-name:hover {
 .auth-field .prefix-input input::-moz-focus-inner {
   border: 0;
 }
+.password-input {
+  padding-inline-end: 4px;
+}
+.password-toggle {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  margin-block: 2px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--mut);
+  cursor: pointer;
+}
+.password-toggle:hover {
+  background: var(--hover);
+  color: var(--fg);
+}
+.password-toggle:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
 .has-error input,
 .has-error select,
 .has-error .prefix-input {
